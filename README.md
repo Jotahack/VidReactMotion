@@ -46,6 +46,8 @@ AI_MODEL=
 
 Si el servidor usa otro puerto, actualiza `AI_BASE_URL`.
 
+El refinamiento consume **dos inferencias secuenciales**; en modelos locales pequeños puede tardar más que antes. La calidad final también depende de los efectos que soporte el renderer.
+
 ## IA por API key
 
 Cambia el `.env`:
@@ -63,7 +65,7 @@ También se admiten otros proveedores con endpoints estilo OpenAI, si el modelo 
 
 1. Escribe un prompt como «Etiqueta roja ÚLTIMA HORA, titular sobre comercio mundial y contador hasta 72, estilo informativo».
 2. Selecciona horizontal **1920 × 1080** o vertical **1080 × 1920**, duración **3–12 s**.
-3. Genera, revisa y, si quieres, ajusta el JSON de escena.
+3. Pulsa **Generar con IA**: el modelo crea primero un briefing creativo y después un JSON de escena compatible. Puedes consultar el briefing y modificar el JSON.
 4. Pulsa **Renderizar transparente** y descarga **MOV ProRes 4444** o **WebM VP8**. Los archivos quedan también en `outputs/`.
 
 El patrón ajedrezado es **solo la guía de transparencia de la vista previa**. Un MP4 H.264 convencional no conserva ese alfa. La importación de MOV alfa depende del editor y versión de CapCut: hay que probarla en el equipo final. Remotion puede descargar un navegador compatible en el primer render.
@@ -95,6 +97,7 @@ docs/          arquitectura y guía de desarrollo
 
 Usamos **un solo backend Node.js ligero**, sin Django, base de datos ni Docker obligatorios. Aplica SOLID/DRY/KISS: rutas y servicios separados, adaptadores de IA intercambiables, contratos compartidos y cero microservicios prematuros.
 
+- [Pipeline IA: idea → briefing creativo → escena](docs/PROMPT_PIPELINE.md)
 - [Arquitectura y decisiones](docs/ARCHITECTURE.md)
 - [Guía de desarrollo y checklist de validación](docs/DEVELOPMENT.md)
 - [Documentación de LM Studio](https://lmstudio.ai/docs/developer/openai-compat)
