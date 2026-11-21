@@ -16,8 +16,8 @@ export function createApiRouter({config,ai,renderer}) {
           typeof prompt!=='string'||!prompt.trim()||prompt.length>2500)
         return res.status(400).json({error:'Selecciona modelo y prompt válido (máximo 2500 caracteres).'});
       const options=normalizeSpec({elements:[{type:'title',text:'test'}]},{format,duration});
-      const raw=await ai.generateScene({model:chosen,prompt:prompt.trim(),format:options.format,duration:options.duration});
-      res.json({spec:normalizeSpec(raw,{format:options.format,duration:options.duration})});
+      const {scene,brief}=await ai.generateScene({model:chosen,prompt:prompt.trim(),format:options.format,duration:options.duration});
+      res.json({spec:normalizeSpec(scene,{format:options.format,duration:options.duration}),brief});
     } catch(error){res.status(502).json({error:error.message});}
   });
   router.post('/render',async (req,res)=>{
