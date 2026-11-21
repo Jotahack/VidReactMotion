@@ -14,11 +14,11 @@ test('se respetan formato, transparencia y límites visuales del motor',()=>{
  const prompt=buildCreativeBriefPrompt({format:'portrait',duration:8});
  assert.match(prompt,/9:16/);
  assert.match(prompt,/8 segundos/);
- assert.match(prompt,/No hay fondo opaco/);
- assert.match(prompt,/NO inventes|no añadas una cifra/);
+ assert.match(prompt,/fondos opacos/);
+ assert.match(prompt,/NUNCA inventes/);
  const scene=buildSystemPrompt({format:'landscape',duration:6});
  assert.match(scene,/16:9/);
- assert.match(scene,/SIN fondo/);
+ assert.match(scene,/Sin fondos|sin fondos/);
  assert.match(scene,/scenes/);
  assert.match(scene,/groups/);
  assert.match(scene,/tiempo|duraci[oó]n|terminar/);
