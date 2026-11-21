@@ -10,6 +10,7 @@
     "studio": "remotion studio src/remotion/index.jsx",
     "build": "vite build",
     "bundle:check": "node scripts/check-remotion-bundle.mjs",
+    "render:smoke": "node scripts/stress-render-smoke.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm test && node --check server/index.mjs"
   },
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@remotion/cli": "4.0.539",
     "@vitejs/plugin-react": "^4.3.1",
+    "pngjs": "^7.0.0",
     "concurrently": "^9.1.2",
     "vite": "^5.4.15",
     "@tailwindcss/vite": "^4.1.0"
