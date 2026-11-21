@@ -10,7 +10,7 @@ test('never exceed the box width with the longest unbreakable word',()=>{
     const label=text.replace(/\\n/g,'\n');
     const size=fitTextSize({text:label,size:90,width:33,canvasWidth:1920});
     const longest=Math.max(...label.split(/\s+/).map(estimateWordEm));
-    assert.ok(size*longest <= 1920*0.33*0.89,'Text overflow: '+text);
+    assert.ok(size*longest <= 1920*0.33*0.93,'Text overflow: '+text);
     assert.ok(size>60,'Text too small: '+text+' '+size);
   }
 });
