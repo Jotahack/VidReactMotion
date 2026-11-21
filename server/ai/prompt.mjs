@@ -12,14 +12,14 @@ export function validateCreativeBrief(brief) {
       BRIEF_FIELDS.some(field=>typeof brief[field]!=='string')) {
     throw new Error('El modelo no ha producido un briefing creativo válido.');
   }
-  return Object.fromEntries(BRIEF_FIELDS.map(field=>[field,brief[field].slice(0,700)]));
+  return Object.fromEntries(BRIEF_FIELDS.map(field=>[field,brief[field].slice(0,1600)]));
 }
 
 export function buildCreativeBriefPrompt({format,duration}) {
   const orientation=format==='portrait'?'vertical 9:16 (1080x1920)':'horizontal 16:9 (1920x1080)';
   return 'Eres director creativo y realizador de motion graphics profesionales para vídeos. '+
     'Transforma la idea del usuario en un storyboard REALIZABLE de '+duration+' segundos en '+orientation+'. '+
-    'Tu tarea es construir una narrativa visual con 2-5 beats o planos, NO colocar palabras dispersas. '+
+    'Tu tarea es construir una narrativa visual en varios planos (hasta ocho para vídeos de 60 segundos), NO colocar palabras dispersas. '+
     'Cada beat debe tener un punto focal claro, una transición hacia el siguiente y continuidad visual. '+
     'Diseña una jerarquía consistente, ritmo creciente y composición limpia como en una cabecera documental premium. '+
     'El diseño será una SUPERPOSICIÓN con transparencia alfa; no utilices fondos opacos ni audio. '+
