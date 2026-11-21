@@ -2,12 +2,13 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {bundle} from '@remotion/bundler';
 import {selectComposition,renderMedia} from '@remotion/renderer';
+import {tailwindBundlerOverride} from './tailwind-bundler.mjs';
 
 export function createRenderService({root,outputDir}) {
   let bundlePromise;
   let rendering=false;
   async function getBundle() {
-    if (!bundlePromise) bundlePromise=bundle({entryPoint:path.join(root,'src/remotion/index.jsx')})
+    if (!bundlePromise) bundlePromise=bundle({entryPoint:path.join(root,'src/remotion/index.jsx'),bundlerOverride:tailwindBundlerOverride})
       .catch(error=>{bundlePromise=undefined;throw error;});
     return bundlePromise;
   }
