@@ -1,6 +1,6 @@
 # Pipeline de generación por IA — VidReactMotion
 
-> **Estado:** la fase A está implementada en la PR #1 (pendiente de pruebas reales con LM Studio/GPT-OSS 20B y render en Windows). Las fases B/C son propuestas. Electron permanece aparcado.
+> **Estado:** el refinamiento de prompts y el motor V2 de escenas/grupos están implementados en la PR #1. Las pruebas reales con LM Studio/GPT-OSS 20B, el alfa de CapCut, las métricas visuales y el editor de timeline siguen pendientes. Electron permanece aparcado.
 
 ## Problema identificado
 
@@ -60,11 +60,12 @@ El usuario sigue escribiendo un prompt sencillo y pulsando **Generar con IA**. L
 
 **Evaluación de cada escena:** claridad a tamaño móvil, legibilidad, contraste con metraje real, ausencia de recortes, ausencia de datos inventados, ritmo, coherencia y correcta transparencia. Registrar ejemplos fallidos antes de ampliar el número de efectos.
 
-## Fase B — Calidad visual del motor (pendiente)
+## Fase B — Calidad visual del motor (en progreso)
 
-- Keyframes y easing específicos por elemento; `spring()` y `interpolate()` de Remotion para entradas con física.
+- Ya integrados: escenas consecutivas, movimiento de grupos, keyframes manuales de grupo, entradas con `spring()` y `interpolate()`, tipografía cinética, SVG orbital y detección básica de huecos.
+- Pendiente: keyframes por elemento renderizados, timeline visual editable y auto-layout.
 - Tipografía y estilos: tracking, bloques, gradientes y trazos/contornos controlados, estilos de noticia e infografía.
-- Más componentes validados: `line`, `shape`, `connector`, `progressRing`, `counter`, `flagSvg`. Ampliar el esquema y los tests antes de prometerlos en el prompt.
+- Disponibles: ring, counter, callout, orbit, divider y kinetic; por implementar: line/connector, shapes avanzadas, gráficos de datos reales y recursos gráficos adicionales.
 - Timeline de varias secuencias, con editor de posiciones y duraciones.
 - Cálculo de cajas de texto, zonas seguras, colisiones y desbordamientos tanto vertical como horizontal.
 
