@@ -19,7 +19,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
 
   async function completeJson({model,system,user,schema,name,temperature,maxTokens}) {
     const body=await call('/chat/completions',{
-      method:'POST',timeoutMs:180000,
+      method:'POST',timeoutMs:300000,
       body:JSON.stringify({
         model,temperature,max_tokens:maxTokens,stream:false,
         messages:[{role:'system',content:system},{role:'user',content:user}],
@@ -48,7 +48,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
         schema:creativeBriefSchema,
         name:'creative_brief',
         temperature:0.6,
-        maxTokens:900
+        maxTokens:1700
       }));
       const scene=await completeJson({
         model,
@@ -57,7 +57,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
         schema:sceneJsonSchema,
         name:'overlay_scene',
         temperature:0.25,
-        maxTokens:1800
+        maxTokens:4600
       });
       return {brief,scene};
     }
