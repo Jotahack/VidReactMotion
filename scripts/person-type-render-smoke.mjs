@@ -33,3 +33,23 @@ if(quadrants.some(n=>n<400))throw new Error('Falta una frase en una columna: '+J
 if(minX<png.width*0.05||maxX>png.width*0.95)throw new Error('El texto toca bordes: '+minX+'..'+maxX);
 if(centerPixels>400)throw new Error('La columna central no quedó libre: '+centerPixels);
 console.log('OK: cuatro frases visibles, palabras completas y pasillo central libre en '+output,quadrants);
+
+const narrow=JSON.parse(JSON.stringify(fixture));
+narrow.scenes[0].groups=[narrow.scenes[0].groups[3]];
+const element=narrow.scenes[0].groups[0].elements[0];
+element.x=62;element.y=54;element.width=24;element.size=90;
+const narrowSpec=normalizeSpec(narrow);
+const narrowLocation=path.join(os.tmpdir(),'vrm-legacy-longword-smoke.png');
+await renderStill({serveUrl,composition,inputProps:{spec:narrowSpec},
+  frame:220,imageFormat:'png',output:narrowLocation,scale:0.5});
+const narrowPng=PNG.sync.read(await readFile(narrowLocation));
+let left=narrowPng.width,right=0,top=narrowPng.height,bottom=0,count=0;
+for(let y=0;y<narrowPng.height;y++)for(let x=0;x<narrowPng.width;x++){
+  if(narrowPng.data[(y*narrowPng.width+x)*4+3]<96)continue;
+  left=Math.min(left,x);right=Math.max(right,x);
+  top=Math.min(top,y);bottom=Math.max(bottom,y);count++;
+}
+if(count<200)throw new Error('El texto ENFERMEDAD ha desaparecido.');
+if(bottom-top>narrowPng.height*0.12)throw new Error('ENFERMEDAD se ha dividido en dos líneas: altura '+(bottom-top)+'px.');
+if(right>narrowPng.width*0.92)throw new Error('ENFERMEDAD invade el margen derecho.');
+console.log('OK: ENFERMEDAD cabe en una sola línea incluso en una columna del 24%:',{left,right,top,bottom},narrowLocation);
