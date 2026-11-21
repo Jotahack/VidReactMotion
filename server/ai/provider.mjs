@@ -2,6 +2,7 @@ import {creativeBriefSchema,buildCreativeBriefPrompt,validateCreativeBrief} from
 import {storyboardPlanSchema,shotJsonSchema,targetShotCount,targetElementCount,
   normalizeStoryboardPlan,assembleStoryboard,buildStoryboardPlanPrompt,buildShotPrompt} from './storyboard.mjs';
 import {normalizeSpec} from '../../src/shared/spec.js';
+import {arrangeCinematicShot} from './layout.mjs';
 
 export function createOpenAiCompatibleProvider(config,request=fetch) {
   const headers={'Content-Type':'application/json'};
@@ -84,7 +85,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
           }
         }
         if(!shot)throw new Error('El modelo no pudo construir cuatro grupos en el plano '+(index+1)+'.');
-        shots.push(shot);
+        shots.push(arrangeCinematicShot(shot,format));
         notify('shot',index+3,'Plano '+(index+1)+'/'+count+' terminado');
       }
       const assembled=assembleStoryboard(plan,shots,format,duration);
