@@ -1,0 +1,98 @@
+{
+  "format": "landscape",
+  "duration": 9,
+  "scenes": [
+    {
+      "at": 0,
+      "hold": 9,
+      "transition": "cut",
+      "preset": "hero",
+      "groups": [
+        {
+          "motion": "fade",
+          "at": 0.35,
+          "hold": 8.65,
+          "elements": [
+            {
+              "type": "title",
+              "text": "UN\nCUERPO",
+              "value": 0,
+              "icon": "globe",
+              "x": 10,
+              "y": 24,
+              "width": 33,
+              "size": 96,
+              "color": "white",
+              "animation": "fade",
+              "at": 0.08,
+              "hold": 8.57
+            }
+          ]
+        },
+        {
+          "motion": "fade",
+          "at": 2.05,
+          "hold": 6.95,
+          "elements": [
+            {
+              "type": "title",
+              "text": "EN\nEQUILIBRIO",
+              "value": 0,
+              "icon": "globe",
+              "x": 59,
+              "y": 24,
+              "width": 33,
+              "size": 92,
+              "color": "white",
+              "animation": "fade",
+              "at": 0.08,
+              "hold": 6.87
+            }
+          ]
+        },
+        {
+          "motion": "fade",
+          "at": 3.9,
+          "hold": 5.1,
+          "elements": [
+            {
+              "type": "title",
+              "text": "NO\nENCUENTRA",
+              "value": 0,
+              "icon": "globe",
+              "x": 10,
+              "y": 55,
+              "width": 33,
+              "size": 90,
+              "color": "white",
+              "animation": "fade",
+              "at": 0.08,
+              "hold": 5.02
+            }
+          ]
+        },
+        {
+          "motion": "fade",
+          "at": 5.75,
+          "hold": 3.25,
+          "elements": [
+            {
+              "type": "title",
+              "text": "ENFERMEDAD",
+              "value": 0,
+              "icon": "globe",
+              "x": 59,
+              "y": 61,
+              "width": 33,
+              "size": 90,
+              "color": "white",
+              "animation": "fade",
+              "at": 0.08,
+              "hold": 3.17
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
