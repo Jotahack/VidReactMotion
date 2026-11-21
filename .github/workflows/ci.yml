@@ -21,3 +21,5 @@ jobs:
         run: npm run check
       - name: Compile React and Tailwind preview
         run: npm run build
+      - name: Compile Remotion and Tailwind for alpha export
+        run: npm run bundle:check
