@@ -2,7 +2,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {readFile,stat} from 'node:fs/promises';
+import {stat} from 'node:fs/promises';
 import {bundle} from '@remotion/bundler';
 import {selectComposition,renderMedia} from '@remotion/renderer';
 import {createStressDemo} from '../src/shared/stress-demo.js';
@@ -18,10 +18,11 @@ const composition=await selectComposition({serveUrl,id:'Overlay',inputProps});
 const outputLocation=path.join(os.tmpdir(),'vrm-alpha-smoke.mov');
 await renderMedia({composition,serveUrl,inputProps,outputLocation,
   codec:'prores',proResProfile:'4444',pixelFormat:'yuva444p10le',
-  imageFormat:'png',frames:[0,29],scale:0.25,concurrency:2});
+  imageFormat:'png',frameRange:[0,29],scale:0.25,concurrency:2});
 const info=await stat(outputLocation);
 if(info.size<4000)throw new Error('El MOV exportado está vacío.');
-const {stdout}=await execFileAsync('ffprobe',[
+const {stdout}=await execFileAsync(process.platform==='win32'?'npx.cmd':'npx',[
+  '--no-install','remotion','ffprobe',
   '-v','error','-select_streams','v:0',
   '-show_entries','stream=codec_name,profile,pix_fmt',
   '-of','json',outputLocation
