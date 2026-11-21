@@ -1,8 +1,9 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Player} from '@remotion/player';
-import {Overlay} from './remotion/Overlay.jsx';
-import {sampleSpec,normalizeSpec} from './shared/spec.js';
+import {TimelineStage} from './remotion/TimelineStage.jsx';
+import {sampleSpec,normalizeSpec,analyzeSpec} from './shared/spec.js';
+import {coverageGaps} from './shared/motion.js';
 import './styles/tailwind.css';
 import './style.css';
 
@@ -21,6 +22,8 @@ function App() {
  const [jsonDraft,setJsonDraft]=useState(JSON.stringify(sampleSpec,null,2));
  const [codec,setCodec]=useState('mov');
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
+ const warnings=useMemo(()=>analyzeSpec(spec),[spec]);
+ const gaps=useMemo(()=>coverageGaps(spec),[spec]);
  useEffect(()=>{refreshModels();},[]);
  async function request(url,init) {
    const response=await fetch(url,init);
@@ -38,7 +41,9 @@ function App() {
    } catch(error){setMessage('Proveedor no disponible: '+error.message);}
  }
  function applySpec(next) {
-   setSpec(next);setJsonDraft(JSON.stringify(next,null,2));setFile('');
+   const updated=normalizeSpec(next);
+   setSpec(updated);setFormat(updated.format);setDuration(updated.duration);
+   setJsonDraft(JSON.stringify(updated,null,2));setFile('');
  }
  async function generate() {
    if(!model){setMessage('Selecciona un modelo de IA.');return;}
@@ -80,7 +85,7 @@ function App() {
            <option value="landscape">Horizontal 1920×1080</option><option value="portrait">Vertical 1080×1920</option>
          </select></div>
          <div><label>Duración</label><select value={duration} onChange={e=>setDuration(Number(e.target.value))}>
-           {[3,4,5,6,8,10,12].map(n=><option key={n} value={n}>{n} segundos</option>)}
+           {[3,4,5,6,8,10,12,15,20,30,45,60].map(n=><option key={n} value={n}>{n} segundos</option>)}
          </select></div>
        </div>
        <div className="model"><label>Modelo · {provider}</label><div className="inline">
@@ -113,12 +118,18 @@ function App() {
          <small>{dimensions.width}×{dimensions.height} · {spec.duration}s · 30fps</small></div>
          <div className="stage" style={{maxWidth:spec.format==='portrait'?360:900}}>
            <div className="checker" style={{aspectRatio:ratio}}>
-             <Player key={JSON.stringify(spec)} component={Overlay} inputProps={{spec}}
+             <Player key={JSON.stringify(spec)} component={TimelineStage} inputProps={{spec}}
                durationInFrames={Math.ceil(spec.duration*30)} compositionWidth={dimensions.width}
                compositionHeight={dimensions.height} fps={30} autoPlay loop controls
                style={{width:'100%',aspectRatio:ratio}}/>
            </div>
          </div><p className="hint">El tablero indica transparencia y no se exporta.</p>
+         <p className="hint">Storyboard: {spec.scenes?.length??1} escenas, {spec.scenes?.reduce((n,s)=>n+s.groups.length,0)??1} grupos sincronizados.</p>
+         {(warnings.length>0||gaps.length>0)&&<div className="quality" role="status">
+           <strong>Revisión de calidad</strong>
+           {warnings.map((w,i)=><p key={'w'+i}>{w}</p>)}
+           {gaps.map((g,i)=><p key={'g'+i}>Posible tiempo muerto: {g.start.toFixed(1)}–{g.end.toFixed(1)} s.</p>)}
+         </div>}
        </div>
        <details className="panel editor"><summary>Editor avanzado · JSON</summary>
          <p>Modifica textos, tamaños, tiempos y posiciones.</p>
