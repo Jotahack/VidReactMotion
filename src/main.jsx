@@ -10,7 +10,7 @@ import './style.css';
 function App() {
  const [spec,setSpec]=useState(sampleSpec);
  const [format,setFormat]=useState('landscape');
- const [duration,setDuration]=useState(6);
+ const [duration,setDuration]=useState(sampleSpec.duration);
  const [prompt,setPrompt]=useState('Crea un titular de última hora sobre la economía mundial. Etiqueta roja y contador animado hasta 72%. Sin fondo.');
  const [brief,setBrief]=useState(null);
  const [models,setModels]=useState([]);
