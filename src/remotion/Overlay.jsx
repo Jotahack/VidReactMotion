@@ -5,6 +5,7 @@ import {
   Cpu,Landmark,Factory,Satellite,Rocket,Network,MapPin,Building2,Coins,Newspaper
 } from 'lucide-react';
 import {COLORS} from '../shared/spec.js';
+import {presetTransform} from '../shared/motion.js';
 import '../styles/tailwind.css';
 import './overlay.css';
 
@@ -16,22 +17,6 @@ const ICONS={
   pin:MapPin,building:Building2,coins:Coins,news:Newspaper
 };
 const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'};
-
-function motionStyles(effect,progress,springProgress) {
-  switch(effect) {
-    case 'left':return {transform:`translateX(${Math.round((1-progress)*-96)}px)`};
-    case 'right':return {transform:`translateX(${Math.round((1-progress)*96)}px)`};
-    case 'up':return {transform:`translateY(${Math.round((1-progress)*75)}px)`};
-    case 'down':return {transform:`translateY(${Math.round((1-progress)*-75)}px)`};
-    case 'pop':return {transform:`scale(${(0.7+springProgress*0.3).toFixed(4)})`};
-    case 'zoom':return {transform:`scale(${(1.25-progress*0.25).toFixed(4)})`};
-    case 'rotate':return {transform:`rotate(${((1-progress)*-18).toFixed(2)}deg) scale(${(0.88+progress*0.12).toFixed(4)})`};
-    case 'spring':return {transform:`translateY(${((1-springProgress)*95).toFixed(2)}px) scale(${(0.9+springProgress*0.1).toFixed(4)})`};
-    case 'blur':return {filter:`blur(${((1-progress)*16).toFixed(2)}px)`};
-    case 'wipe':return {clipPath:`inset(0 ${((1-progress)*100).toFixed(2)}% 0 0)`};
-    default:return {};
-  }
-}
 
 function ProgressRing({element:e,color,progress}) {
   const size=Math.max(110,Math.min(275,e.size*4));
@@ -107,7 +92,7 @@ function Element({element:e}) {
     position:'absolute',left:`${e.x}%`,top:`${e.y}%`,width:`${e.width}%`,
     color,fontFamily:'Inter,Arial,sans-serif',fontSize:size,
     lineHeight:1.12,opacity,overflowWrap:'anywhere',
-    ...motionStyles(e.animation,progress,springProgress)
+    ...presetTransform(e.animation,progress,springProgress)
   };
 
   if (e.type==='kinetic') return <div className="pointer-events-none absolute" style={s}>
