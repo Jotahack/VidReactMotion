@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import {COLORS} from '../shared/spec.js';
 import {presetTransform} from '../shared/motion.js';
+import {fitTextSize} from '../shared/text-layout.js';
 import '../styles/tailwind.css';
 import './overlay.css';
 
@@ -87,11 +88,15 @@ function Element({element:e}) {
   const opacity=Math.min(progress,exit);
   const color=COLORS[e.color]||COLORS.white;
   const Icon=ICONS[e.icon]||Globe2;
-  const size=Math.round(e.size*(canvasWidth<1500?0.95:1));
+  const requestedSize=Math.round(e.size*(canvasWidth<1500?0.95:1));
+  const isText=['title','subtitle','kinetic','quote','callout','pill','tag'].includes(e.type);
+  const size=isText?fitTextSize({text:e.text,size:requestedSize,width:e.width,canvasWidth}):requestedSize;
   const s={
     position:'absolute',left:`${e.x}%`,top:`${e.y}%`,width:`${e.width}%`,
     color,fontFamily:'Inter,Arial,sans-serif',fontSize:size,
-    lineHeight:1.12,opacity,overflowWrap:'anywhere',
+    lineHeight:1.12,opacity,
+    // Never split words into 'EQUILIBRI' + 'O'. Newlines are explicit layout cues.
+    wordBreak:'normal',overflowWrap:'normal',hyphens:'none',whiteSpace:'pre-line',
     ...presetTransform(e.animation,progress,springProgress)
   };
 
