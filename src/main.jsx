@@ -4,6 +4,7 @@ import {Player} from '@remotion/player';
 import {TimelineStage} from './remotion/TimelineStage.jsx';
 import {sampleSpec,normalizeSpec,analyzeSpec} from './shared/spec.js';
 import {createStressDemo} from './shared/stress-demo.js';
+import {readNdjsonResponse} from './shared/ndjson.js';
 import {coverageGaps} from './shared/motion.js';
 import './styles/tailwind.css';
 import './style.css';
@@ -23,6 +24,7 @@ function App() {
  const [jsonDraft,setJsonDraft]=useState(JSON.stringify(sampleSpec,null,2));
  const [codec,setCodec]=useState('mov');
  const generationAbort=useRef(null);
+ const renderAbort=useRef(null);
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
  const warnings=useMemo(()=>analyzeSpec(spec),[spec]);
  const gaps=useMemo(()=>coverageGaps(spec),[spec]);
@@ -52,39 +54,20 @@ function App() {
    const controller=new AbortController();generationAbort.current=controller;
    setBusy('generate');setFile('');setBrief(null);
    setMessage('Preparando dirección creativa y storyboard...');
-   try {
+   try{
      const response=await fetch('/api/generate/stream',{
        method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
        body:JSON.stringify({prompt,model,format,duration})
      });
-     if(!response.ok){
-       const error=await response.json().catch(()=>({}));
-       throw new Error(error.error||'Error HTTP '+response.status);
-     }
-     if(!response.body)throw new Error('El navegador no permite recibir progreso en directo.');
-     const reader=response.body.getReader();
-     const decoder=new TextDecoder();
-     let buffer='';let finished=false;
-     const handle=line=>{
-       if(!line.trim())return;
-       const event=JSON.parse(line);
-       if(event.type==='progress'){
-         setMessage((event.detail||event.stage)+' ('+event.completed+'/'+event.total+')');
-       }else if(event.type==='error'){throw new Error(event.message||'Error generando escena.');}
-       else if(event.type==='result'){
+     let finished=false;
+     await readNdjsonResponse(response,event=>{
+       if(event.type==='progress')setMessage((event.detail||event.stage)+' ('+event.completed+'/'+event.total+')');
+       if(event.type==='result'){
          applySpec(event.spec);setBrief(event.brief||null);finished=true;
          const m=event.metrics;
          setMessage('Generado: '+(m?m.shots+' escenas · '+m.groups+' grupos · '+m.elements+' elementos · '+m.keyframes+' keyframes':'storyboard validado')+'.');
        }
-     };
-     while(true){
-       const {value,done}=await reader.read();
-       if(done)break;
-       buffer+=decoder.decode(value,{stream:true});
-       const lines=buffer.split('\n');buffer=lines.pop()||'';
-       for(const line of lines)handle(line);
-     }
-     if(buffer.trim())handle(buffer);
+     });
      if(!finished)throw new Error('Generación interrumpida sin resultado.');
    }catch(error){
      setMessage(controller.signal.aborted?'Generación cancelada.':'Error de generación: '+error.message);
@@ -97,13 +80,25 @@ function App() {
    } catch(error){setMessage('JSON no válido: '+error.message);}
  }
  async function render() {
-   setBusy('render');setFile('');setMessage('Exportando con canal alfa…');
-   try {
-     const data=await request('/api/render',{method:'POST',headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({spec,codec})});
-     setFile(data.url);setMessage('Vídeo generado: '+data.filename);
-   } catch(error){setMessage('Error de render: '+error.message);}
-   finally{setBusy('');}
+   const controller=new AbortController();renderAbort.current=controller;
+   setBusy('render');setFile('');setMessage('Preparando exportación con canal alfa...');
+   try{
+     const response=await fetch('/api/render/stream',{
+       method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
+       body:JSON.stringify({spec,codec})
+     });
+     let finished=false;
+     await readNdjsonResponse(response,event=>{
+       if(event.type==='progress')setMessage(event.stage==='bundle'
+         ?'Compilando motor Remotion...':'Exportando '+event.percent+'%');
+       if(event.type==='result'){
+         setFile(event.url);setMessage('Vídeo transparente generado: '+event.filename);finished=true;
+       }
+     });
+     if(!finished)throw new Error('Exportación interrumpida sin archivo.');
+   }catch(error){
+     setMessage(controller.signal.aborted?'Exportación cancelada.':'Error de render: '+error.message);
+   }finally{renderAbort.current=null;setBusy('');}
  }
  const ratio=spec.format==='portrait'?'9 / 16':'16 / 9';
  return <main className="shell min-h-screen">
@@ -159,6 +154,7 @@ function App() {
        <button className="export" disabled={Boolean(busy)} onClick={render}>
          {busy==='render'?'Renderizando…':'⬇ Renderizar transparente'}
        </button>
+       {busy==='render'&&<button className="secondary mt-2" onClick={()=>renderAbort.current?.abort()}>Cancelar exportación</button>}
        {file&&<a className="download" href={file} download>Descargar vídeo generado</a>}
        <div className="message" role="status">{message}</div>
      </section>
