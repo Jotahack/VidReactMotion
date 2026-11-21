@@ -2,7 +2,7 @@
 
 **Generador de overlays y animaciones con fondo transparente mediante prompts.** Editor React y render local con Remotion. La generación funciona con **LM Studio** o con una **API compatible con OpenAI** mediante clave.
 
-> **Estado: MVP técnico V2.** Ahora incluye storyboards con escenas consecutivas, grupos animados, keyframes de grupo, tipografía cinética y SVG orbital, editor JSON, vista previa y exportación MOV/WebM con alfa. No se ha validado todavía el render de extremo a extremo en tu Windows/CapCut.
+> **Estado: MVP técnico V2.** Ahora incluye storyboards con escenas consecutivas, grupos animados, keyframes de grupo, tipografía cinética, SVG orbital, pulsos, haces de luz y ticker, editor JSON, vista previa y exportación MOV/WebM con alfa. No se ha validado todavía el render de extremo a extremo en tu Windows/CapCut.
 
 ## Aplicación de escritorio (plan de evolución)
 
@@ -46,7 +46,7 @@ AI_MODEL=
 
 Si el servidor usa otro puerto, actualiza `AI_BASE_URL`.
 
-El refinamiento consume **dos inferencias secuenciales**; en modelos locales pequeños puede tardar más que antes. La calidad final también depende de los efectos que soporte el renderer.
+**Generación cinematográfica por planos:** una pieza de 60 segundos requiere briefing, plan de ocho escenas y una inferencia por escena: **10 peticiones secuenciales** al modelo (más reintentos si un plano sale incompleto). Se muestra el progreso en directo y se puede cancelar. Con GPT-OSS 20B en local puede tardar bastante; no se ha medido aún el tiempo real en tu PC.
 
 ## IA por API key
 
@@ -61,12 +61,18 @@ AI_MODEL=ID_DEL_MODELO_COMPATIBLE
 
 También se admiten otros proveedores con endpoints estilo OpenAI, si el modelo admite `response_format: json_schema`. `AI_MODEL` sirve para proveedores que no ofrezcan `GET /models`. **Nunca subas `.env` a Git**, ni pegues la API key en el frontend. Con una API externa el prompt sale a ese proveedor; el vídeo se sigue renderizando localmente.
 
+## Prueba extrema sin modelo
+
+Selecciona **Horizontal 16:9** o **Vertical 9:16** y pulsa **«Cargar prueba extrema · 60 segundos · formato elegido»**. La aplicación prepara un storyboard determinista de **8 escenas, 32 grupos, 65 elementos y 96 keyframes**. Puedes cargar también un archivo JSON desde tu equipo. La prueba extrema se construye sin IA y permite distinguir un problema del motor de uno de GPT-OSS.
+
+En CI se ejecutan pruebas unitarias, compilación de Vite y Remotion, renders PNG con transparencia y una prueba corta de ProRes 4444 alfa. **La compatibilidad final con tu CapCut y el tiempo de render de 60s en Windows deben comprobarse en tu equipo.**
+
 ## Flujo de trabajo
 
 1. Escribe un prompt como «Etiqueta roja ÚLTIMA HORA, titular sobre comercio mundial y contador hasta 72, estilo informativo».
 2. Selecciona horizontal **1920 × 1080** o vertical **1080 × 1920**, duración **3–60 s**.
-3. Pulsa **Generar con IA**: el modelo crea primero un briefing creativo y después un storyboard JSON V2 con planos y grupos animados. Puedes consultar el briefing y modificar el JSON.
-4. Pulsa **Renderizar transparente** y descarga **MOV ProRes 4444** o **WebM VP8**. Los archivos quedan también en `outputs/`.
+3. Pulsa **Generar con IA**: el modelo crea primero un briefing creativo y después un storyboard JSON V2 con planos y grupos animados, keyframes generados y distribución automática de elementos (solo para escenas creadas por IA). Puedes consultar el briefing y modificar el JSON.
+4. Pulsa **Renderizar transparente** y descarga **MOV ProRes 4444** o **WebM VP8**. Los archivos quedan también en `outputs/`. La aplicación muestra el progreso y permite cancelar una exportación larga.
 
 El patrón ajedrezado es **solo la guía de transparencia de la vista previa**. Un MP4 H.264 convencional no conserva ese alfa. La importación de MOV alfa depende del editor y versión de CapCut: hay que probarla en el equipo final. Remotion puede descargar un navegador compatible en el primer render.
 
@@ -98,6 +104,7 @@ docs/          arquitectura y guía de desarrollo
 Usamos **un solo backend Node.js ligero**, sin Django, base de datos ni Docker obligatorios. Aplica SOLID/DRY/KISS: rutas y servicios separados, adaptadores de IA intercambiables, contratos compartidos y cero microservicios prematuros.
 
 - [Motor V2: storyboards, grupos y keyframes](docs/TIMELINE_V2.md)
+- [Generación cinematográfica y prueba extrema de 60s](docs/CINEMATIC_GENERATION.md)
 - [Pipeline IA: idea → briefing creativo → storyboard](docs/PROMPT_PIPELINE.md)
 - [Arquitectura y decisiones](docs/ARCHITECTURE.md)
 - [Guía de desarrollo y checklist de validación](docs/DEVELOPMENT.md)
