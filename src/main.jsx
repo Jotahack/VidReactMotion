@@ -1,8 +1,9 @@
-import React,{useEffect,useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Player} from '@remotion/player';
 import {TimelineStage} from './remotion/TimelineStage.jsx';
 import {sampleSpec,normalizeSpec,analyzeSpec} from './shared/spec.js';
+import {createStressDemo} from './shared/stress-demo.js';
 import {coverageGaps} from './shared/motion.js';
 import './styles/tailwind.css';
 import './style.css';
@@ -21,6 +22,7 @@ function App() {
  const [file,setFile]=useState('');
  const [jsonDraft,setJsonDraft]=useState(JSON.stringify(sampleSpec,null,2));
  const [codec,setCodec]=useState('mov');
+ const generationAbort=useRef(null);
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
  const warnings=useMemo(()=>analyzeSpec(spec),[spec]);
  const gaps=useMemo(()=>coverageGaps(spec),[spec]);
@@ -47,13 +49,46 @@ function App() {
  }
  async function generate() {
    if(!model){setMessage('Selecciona un modelo de IA.');return;}
-   setBusy('generate');setFile('');setBrief(null);setMessage('Refinando la idea y generando una escena validada…');
+   const controller=new AbortController();generationAbort.current=controller;
+   setBusy('generate');setFile('');setBrief(null);
+   setMessage('Preparando dirección creativa y storyboard...');
    try {
-     const data=await request('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({prompt,model,format,duration})});
-     applySpec(data.spec);setBrief(data.brief||null);setMessage('Escena creada. Consulta el briefing creativo y revisa la vista previa.');
-   } catch(error){setMessage('Error de generación: '+error.message);}
-   finally{setBusy('');}
+     const response=await fetch('/api/generate/stream',{
+       method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
+       body:JSON.stringify({prompt,model,format,duration})
+     });
+     if(!response.ok){
+       const error=await response.json().catch(()=>({}));
+       throw new Error(error.error||'Error HTTP '+response.status);
+     }
+     if(!response.body)throw new Error('El navegador no permite recibir progreso en directo.');
+     const reader=response.body.getReader();
+     const decoder=new TextDecoder();
+     let buffer='';let finished=false;
+     const handle=line=>{
+       if(!line.trim())return;
+       const event=JSON.parse(line);
+       if(event.type==='progress'){
+         setMessage((event.detail||event.stage)+' ('+event.completed+'/'+event.total+')');
+       }else if(event.type==='error'){throw new Error(event.message||'Error generando escena.');}
+       else if(event.type==='result'){
+         applySpec(event.spec);setBrief(event.brief||null);finished=true;
+         const m=event.metrics;
+         setMessage('Generado: '+(m?m.shots+' escenas · '+m.groups+' grupos · '+m.elements+' elementos · '+m.keyframes+' keyframes':'storyboard validado')+'.');
+       }
+     };
+     while(true){
+       const {value,done}=await reader.read();
+       if(done)break;
+       buffer+=decoder.decode(value,{stream:true});
+       const lines=buffer.split('\n');buffer=lines.pop()||'';
+       for(const line of lines)handle(line);
+     }
+     if(buffer.trim())handle(buffer);
+     if(!finished)throw new Error('Generación interrumpida sin resultado.');
+   }catch(error){
+     setMessage(controller.signal.aborted?'Generación cancelada.':'Error de generación: '+error.message);
+   }finally{generationAbort.current=null;setBusy('');}
  }
  function applyJson() {
    try {
@@ -94,9 +129,20 @@ function App() {
          </select><button className="secondary" onClick={refreshModels} title="Actualizar">↻</button>
        </div></div>
        <button disabled={Boolean(busy)} onClick={generate}>{busy==='generate'?'Refinando y generando…':'✦ Generar con IA'}</button>
+       {busy==='generate'&&<button className="secondary mt-2" onClick={()=>generationAbort.current?.abort()}>Cancelar generación</button>}
        <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
          applySpec(sampleSpec);setBrief(null);setMessage('Demo V2 cargada sin utilizar IA: compara este resultado con el generado por GPT-OSS.');
        }}>Ver demo del motor V2 (sin IA)</button>
+       <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
+         applySpec(createStressDemo());setBrief(null);setMessage('Prueba de estrés 60 s cargada: 8 escenas, 32 grupos y 65 elementos, sin IA.');
+       }}>Cargar prueba extrema · 60 segundos (sin IA)</button>
+       <label className="mt-4" htmlFor="jsonImport">Abrir un JSON guardado en el ordenador</label>
+       <input id="jsonImport" type="file" accept=".json,application/json" disabled={Boolean(busy)} onChange={async event=>{
+         const file=event.target.files?.[0];if(!file)return;
+         try{applySpec(JSON.parse(await file.text()));setMessage('Proyecto JSON importado: '+file.name);}
+         catch(error){setMessage('Error al importar JSON: '+error.message);}
+         event.target.value='';
+       }}/>
        {brief&&<details className="brief">
          <summary>Briefing creativo utilizado</summary>
          <p><strong>Titular:</strong> {brief.headline}</p>
