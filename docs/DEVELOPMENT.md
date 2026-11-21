@@ -23,7 +23,7 @@ Usa `.env.example` como referencia. **Nunca se versiona `.env`.** El proyecto re
 
 - [ ] `npm install` y `npm run dev` en Windows PowerShell.
 - [ ] Vista previa y editor JSON sin IA.
-- [ ] Generación con LM Studio y modelo compatible con JSON Schema.
+- [ ] Generación con LM Studio y modelo compatible con JSON Schema (verificar los 2 pasos: briefing y escena).
 - [ ] Generación mediante API key externa.
 - [ ] Exportación MOV ProRes 4444 con canal alfa real.
 - [ ] Exportación WebM VP8 con alfa.
