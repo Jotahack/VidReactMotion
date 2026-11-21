@@ -180,5 +180,5 @@ const sceneSchema={type:'object',additionalProperties:false,properties:{
   groups:{type:'array',minItems:1,maxItems:4,items:groupSchema}
 },required:['at','hold','transition','preset','groups']};
 export const sceneJsonSchema={type:'object',additionalProperties:false,properties:{
-  scenes:{type:'array',minItems:1,maxItems:6,items:sceneSchema}
+  scenes:{type:'array',minItems:1,maxItems:8,items:sceneSchema}
 },required:['scenes']};
