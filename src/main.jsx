@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {Player} from '@remotion/player';
 import {Overlay} from './remotion/Overlay.jsx';
 import {sampleSpec,normalizeSpec} from './shared/spec.js';
+import './styles/tailwind.css';
 import './style.css';
 
 function App() {
@@ -65,13 +66,13 @@ function App() {
    finally{setBusy('');}
  }
  const ratio=spec.format==='portrait'?'9 / 16':'16 / 9';
- return <main className="shell">
+ return <main className="shell min-h-screen">
    <header><div><div className="eyebrow">REACT · REMOTION · IA LOCAL O API</div>
      <h1>VidReactMotion <span>α</span></h1>
      <p>Animaciones transparentes desde prompts, renderizadas en tu ordenador.</p>
    </div><div className="local">● Render local</div></header>
    <div className="layout">
-     <section className="panel controls">
+     <section className="panel controls shadow-2xl">
        <label htmlFor="prompt">Describe tu animación</label>
        <textarea id="prompt" rows="5" value={prompt} onChange={e=>setPrompt(e.target.value)}/>
        <div className="smallgrid">
@@ -108,7 +109,7 @@ function App() {
        <div className="message" role="status">{message}</div>
      </section>
      <section className="right">
-       <div className="panel previewPanel"><div className="previewTitle"><strong>Vista previa</strong>
+       <div className="panel previewPanel ring-1 ring-white/5"><div className="previewTitle"><strong>Vista previa</strong>
          <small>{dimensions.width}×{dimensions.height} · {spec.duration}s · 30fps</small></div>
          <div className="stage" style={{maxWidth:spec.format==='portrait'?360:900}}>
            <div className="checker" style={{aspectRatio:ratio}}>
