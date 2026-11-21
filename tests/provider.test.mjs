@@ -13,7 +13,7 @@ const brief={
 
 test('la IA refina la idea antes de generar el JSON renderizable',async()=>{
  const calls=[];
- const responses=[brief,{elements:[{type:'title',text:'CAMBIA EL MUNDO'}]}];
+ const responses=[brief,{scenes:[{at:0,hold:6,transition:'fade',preset:'hero',groups:[{motion:'spring',at:0,hold:6,elements:[{type:'title',text:'CAMBIA EL MUNDO',value:0,icon:'globe',x:10,y:30,width:80,size:70,color:'white',animation:'up',at:0.1,hold:5.7}]}]}]}];
  const ai=createOpenAiCompatibleProvider({baseUrl:'https://api.example.com/v1',apiKey:'secret',model:'test'},
    async (url,options)=>{
      calls.push({url,options,body:JSON.parse(options.body)});
