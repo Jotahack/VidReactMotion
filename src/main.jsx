@@ -102,7 +102,7 @@ function App() {
          <p><strong>Composición:</strong> {brief.layout}</p>
          <p><strong>Animación:</strong> {brief.animationPlan}</p>
          <p><strong>Recursos:</strong> {brief.assets}</p>
-       </details>
+       </details>}
        <div className="separator"/>
        <label>Exportación</label><select value={codec} onChange={e=>setCodec(e.target.value)}>
          <option value="mov">MOV · ProRes 4444 con alfa</option><option value="webm">WebM · VP8 con alfa</option>
