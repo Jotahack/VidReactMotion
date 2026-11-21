@@ -45,6 +45,12 @@ Prompt -> React -> API Express -> proveedor IA
 - `POST /api/render`: escena y codec => nombre y URL de descarga.
 - `GET /api/files/:filename`: archivos renderizados.
 
+## Evolución a aplicación de escritorio
+
+La siguiente etapa propone **Electron** para conservar React/Remotion y distribuir un ejecutable Windows sin cuentas ni base de datos. No debemos integrar directamente Electron en los servicios de negocio: un adaptador de escritorio por IPC compartirá operaciones con el adaptador Express del modo web. Las claves de API requieren almacenamiento seguro del sistema, mientras escenas y ajustes se guardarán en archivos locales.
+
+El plan técnico y sus pruebas de aceptación están en [DESKTOP.md](DESKTOP.md). **Esta integración aún no está implementada.**
+
 ## Decisiones pendientes
 
 - API cloud: actualmente exige soporte de JSON Schema estructurado. Más adelante soportaremos capacidades diferentes por proveedor.
