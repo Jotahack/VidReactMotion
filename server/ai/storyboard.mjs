@@ -19,10 +19,10 @@ const elementProperties={
 const elementSchema={type:'object',additionalProperties:false,properties:elementProperties,required:Object.keys(elementProperties)};
 const groupSchema={type:'object',additionalProperties:false,properties:{
   motion:{type:'string',enum:VALID_ANIMATIONS},at:{type:'number'},hold:{type:'number'},
-  elements:{type:'array',minItems:1,maxItems:4,items:elementSchema}
+  elements:{type:'array',minItems:2,maxItems:3,items:elementSchema}
 },required:['motion','at','hold','elements']};
 export const shotJsonSchema={type:'object',additionalProperties:false,properties:{
-  groups:{type:'array',minItems:1,maxItems:4,items:groupSchema}
+  groups:{type:'array',minItems:4,maxItems:4,items:groupSchema}
 },required:['groups']};
 
 export function targetShotCount(duration){
