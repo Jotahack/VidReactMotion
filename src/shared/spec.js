@@ -72,7 +72,7 @@ function normalizeGroup(group,maxTime,format) {
   const at=limit(group.at,0,Math.max(0,maxTime-0.15),0);
   // Deliberately cover the rest of the shot to avoid the 3.5 second blank tail
   // seen in initial LLM outputs. Elements still use their own requested timing.
-  const hold=Math.max(limit(group.hold,0.15,maxTime-at,maxTime-at),maxTime-at);
+  const hold=limit(group.hold,0.15,maxTime-at,maxTime-at);
   const elements=group.elements.slice(0,10).map(e=>normalizeElement(e,hold,format)).filter(Boolean);
   if(!elements.length) return null;
   // Repair a quiet tail by keeping the latest active layer on screen until the shot ends.
@@ -88,6 +88,13 @@ function normalizeScene(scene,at,hold,format) {
   const groups=Array.isArray(scene.groups)?scene.groups:[];
   const normalizedGroups=groups.slice(0,5).map(g=>normalizeGroup(g,hold,format)).filter(Boolean);
   if(!normalizedGroups.length)return null;
+  // Leave room for staggered group exits, but never leave a shot completely empty.
+  const latest=normalizedGroups.reduce((best,g)=>g.at+g.hold>best.at+best.hold?g:best,normalizedGroups[0]);
+  if(hold-(latest.at+latest.hold)>0.4){
+    latest.hold=Number((hold-latest.at).toFixed(3));
+    const lastLayer=latest.elements.reduce((best,e)=>e.at+e.hold>best.at+best.hold?e:best,latest.elements[0]);
+    lastLayer.hold=Number((latest.hold-lastLayer.at).toFixed(3));
+  }
   return {
     at,hold,transition:choose(scene.transition,VALID_TRANSITIONS,'fade'),
     preset:choose(scene.preset,VALID_PRESETS,'hero'),groups:normalizedGroups
