@@ -9,3 +9,6 @@
 .vrm-progress-ring{filter:drop-shadow(0 8px 17px rgba(0,0,0,.54))}
 .vrm-ring-figure{text-shadow:0 6px 18px rgba(0,0,0,.68)}
 .vrm-label{text-shadow:0 3px 10px rgba(0,0,0,.75)}
+
+/* A word may move to the next line, but its letters never break apart. */
+.vrm-whole-word{display:inline-block;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;hyphens:none}
