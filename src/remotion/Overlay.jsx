@@ -53,6 +53,38 @@ function ProgressRing({element:e,color,progress}) {
   </div>;
 }
 
+
+// Decorative orbital SVG: all movement comes from a video frame, not CSS time.
+function OrbitGraphic({size,color,elapsed,fps}) {
+  const d=Math.max(145,Math.min(340,size*4.2));
+  const center=d/2,radius=d*0.36;
+  const phase=elapsed/fps*Math.PI*0.9;
+  const px=center+radius*Math.cos(phase);
+  const py=center+radius*Math.sin(phase)*0.42;
+  return <svg viewBox={'0 0 '+d+' '+d} width={d} height={d} role="presentation" aria-hidden="true">
+    <circle cx={center} cy={center} r={radius*0.53} fill="none" stroke={color} strokeWidth="4" opacity="0.65"/>
+    <ellipse cx={center} cy={center} rx={radius} ry={radius*0.42} fill="none" stroke={color} strokeWidth="4" opacity="0.75"
+      transform={'rotate(-22 '+center+' '+center+')'}/>
+    <ellipse cx={center} cy={center} rx={radius} ry={radius*0.42} fill="none" stroke="white" strokeWidth="2" opacity="0.32"
+      transform={'rotate(52 '+center+' '+center+')'}/>
+    <circle cx={center} cy={center} r={radius*0.23} fill={color} opacity="0.28"/>
+    <circle cx={center} cy={center} r={radius*0.14} fill={color}/>
+    <circle cx={px} cy={py} r={10} fill="white" stroke={color} strokeWidth="5"/>
+  </svg>;
+}
+function KineticWords({text,elapsed,size}) {
+  const words=text.trim().split(/\s+/).slice(0,16);
+  return <div className="vrm-title flex flex-wrap gap-x-[0.24em] gap-y-[0.08em] font-black tracking-tight" style={{fontSize:size}}>
+    {words.map((word,index)=>{
+      const entrance=Math.max(0,Math.min(1,(elapsed-index*5)/12));
+      return <span key={index} style={{
+        display:'inline-block',opacity:entrance,
+        transform:'translateY('+Math.round((1-entrance)*45)+'px)'
+      }}>{word}</span>;
+    })}
+  </div>;
+}
+
 function Element({element:e}) {
   const frame=useCurrentFrame();
   const {fps,width:canvasWidth}=useVideoConfig();
@@ -78,6 +110,18 @@ function Element({element:e}) {
     ...motionStyles(e.animation,progress,springProgress)
   };
 
+  if (e.type==='kinetic') return <div className="pointer-events-none absolute" style={s}>
+    <KineticWords text={e.text} elapsed={elapsed} size={size}/>
+  </div>;
+  if (e.type==='orbit') return <div className="pointer-events-none absolute vrm-glow" style={s}>
+    <OrbitGraphic size={size} color={color} elapsed={elapsed} fps={fps}/>
+  </div>;
+  if (e.type==='callout') return <div className="pointer-events-none absolute" style={s}>
+    <div className="vrm-glass inline-flex w-full items-center gap-4 rounded-xl px-5 py-4">
+      <span className="h-4 w-4 shrink-0 rounded-full" style={{backgroundColor:color,boxShadow:'0 0 20px '+color}}/>
+      <span className="font-bold" style={{fontSize:size*0.8}}>{e.text}</span>
+    </div>
+  </div>;
   if (e.type==='icon') return <div className="pointer-events-none absolute vrm-glow" style={s}>
     <Icon size={Math.round(size*1.65)} strokeWidth={2.3}/>
   </div>;
