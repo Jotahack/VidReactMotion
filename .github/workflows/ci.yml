@@ -47,3 +47,13 @@ jobs:
           path: /tmp/vrm-alpha-smoke.mov
           if-no-files-found: ignore
           retention-days: 7
+      - name: Verify text columns and central person space
+        run: npm run render:type:smoke
+      - name: Save typography proof frame
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: person-centered-typography
+          path: /tmp/vrm-person-type-smoke.png
+          if-no-files-found: ignore
+          retention-days: 7
