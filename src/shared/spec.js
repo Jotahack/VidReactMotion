@@ -1,4 +1,4 @@
-export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill'];
+export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout'];
 export const VALID_COLORS=['white','lime','red','cyan','yellow','gray','orange','violet','pink'];
 export const VALID_ANIMATIONS=['up','left','pop','fade','right','down','zoom','rotate','blur','wipe','spring'];
 export const VALID_ICONS=['globe','chart','trend','alert','flag','bolt','shield','users','cpu','landmark','factory','satellite','rocket','network','pin','building','coins','news'];
@@ -29,14 +29,14 @@ export const sampleSpec={format:'landscape',duration:12,scenes:[
     {motion:'up',at:0,hold:4,elements:[
       makeElement('title','MOVIMIENTO Y PRECISIÓN',9,23,76,72,'white','wipe',0.2,3.5),
       makeElement('divider','',9,45,73,23,'orange','wipe',0.65,3.1),
-      makeElement('icon','',70,56,18,65,'cyan','zoom',1,2.7,0,'globe')
+      makeElement('orbit','',70,54,24,65,'cyan','zoom',1,2.7,0,'globe')
     ]}
   ]},
   {at:8,hold:4,transition:'zoom',preset:'data',groups:[
     {motion:'pop',at:0,hold:4,elements:[
       makeElement('tag','EJEMPLO FICTICIO',9,18,60,27,'orange','fade',0.1,3.7,0,'alert'),
       makeElement('ring','PROGRESO DEMO',60,29,30,58,'lime','spring',0.4,3.5,72),
-      makeElement('title','CADA FOTOGRAMA CUENTA',9,42,50,62,'white','up',0.7,3.1)
+      makeElement('kinetic','CADA FOTOGRAMA CUENTA',9,42,50,62,'white','up',0.7,3.1)
     ]}
   ]}
 ]};
