@@ -40,7 +40,9 @@ const element=narrow.scenes[0].groups[0].elements[0];
 element.x=62;element.y=54;element.width=24;element.size=90;
 const narrowSpec=normalizeSpec(narrow);
 const narrowLocation=path.join(os.tmpdir(),'vrm-legacy-longword-smoke.png');
-await renderStill({serveUrl,composition,inputProps:{spec:narrowSpec},
+const narrowProps={spec:narrowSpec};
+const narrowComposition=await selectComposition({serveUrl,id:'Overlay',inputProps:narrowProps});
+await renderStill({serveUrl,composition:narrowComposition,inputProps:narrowProps,
   frame:220,imageFormat:'png',output:narrowLocation,scale:0.5});
 const narrowPng=PNG.sync.read(await readFile(narrowLocation));
 let left=narrowPng.width,right=0,top=narrowPng.height,bottom=0,count=0;
