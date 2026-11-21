@@ -19,5 +19,8 @@ test('se respetan formato, transparencia y límites visuales del motor',()=>{
  const scene=buildSystemPrompt({format:'landscape',duration:6});
  assert.match(scene,/16:9/);
  assert.match(scene,/SIN fondo/);
- assert.match(scene,/type, text, value/);
+ assert.match(scene,/scenes/);
+ assert.match(scene,/groups/);
+ assert.match(scene,/tiempo|duraci[oó]n|terminar/);
+ assert.match(scene,/SIN|sin|fondos/);
 });
