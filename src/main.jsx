@@ -129,8 +129,8 @@ function App() {
          applySpec(sampleSpec);setBrief(null);setMessage('Demo V2 cargada sin utilizar IA: compara este resultado con el generado por GPT-OSS.');
        }}>Ver demo del motor V2 (sin IA)</button>
        <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
-         applySpec(createStressDemo());setBrief(null);setMessage('Prueba de estrés 60 s cargada: 8 escenas, 32 grupos y 65 elementos, sin IA.');
-       }}>Cargar prueba extrema · 60 segundos (sin IA)</button>
+         applySpec(createStressDemo(format));setBrief(null);setMessage('Prueba extrema 60 s ('+(format==='portrait'?'9:16':'16:9')+') cargada: 8 escenas, 32 grupos y 65 elementos, sin IA.');
+       }}>Cargar prueba extrema · 60 segundos · formato elegido</button>
        <label className="mt-4" htmlFor="jsonImport">Abrir un JSON guardado en el ordenador</label>
        <input id="jsonImport" type="file" accept=".json,application/json" disabled={Boolean(busy)} onChange={async event=>{
          const file=event.target.files?.[0];if(!file)return;
