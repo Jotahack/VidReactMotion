@@ -77,7 +77,8 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
             temperature:attempt?0.2:0.38,maxTokens:4400,signal
           });
           if(Array.isArray(generated?.groups)&&generated.groups.length===4&&
-              generated.groups.every(g=>Array.isArray(g.elements)&&g.elements.length>0)){
+              generated.groups.every(g=>Array.isArray(g.elements)&&g.elements.length>0)&&
+              generated.groups.reduce((n,g)=>n+g.elements.length,0)>=target){
             shot=generated;
             break;
           }
