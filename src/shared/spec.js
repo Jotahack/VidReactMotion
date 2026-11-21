@@ -1,4 +1,4 @@
-export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout'];
+export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout','pulse','beam','ticker'];
 export const VALID_COLORS=['white','lime','red','cyan','yellow','gray','orange','violet','pink'];
 export const VALID_ANIMATIONS=['up','left','pop','fade','right','down','zoom','rotate','blur','wipe','spring'];
 export const VALID_ICONS=['globe','chart','trend','alert','flag','bolt','shield','users','cpu','landmark','factory','satellite','rocket','network','pin','building','coins','news'];
