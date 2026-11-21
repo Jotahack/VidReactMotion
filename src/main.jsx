@@ -4,6 +4,7 @@ import {Player} from '@remotion/player';
 import {TimelineStage} from './remotion/TimelineStage.jsx';
 import {sampleSpec,normalizeSpec,analyzeSpec} from './shared/spec.js';
 import {createStressDemo} from './shared/stress-demo.js';
+import personCenteredTypography from '../examples/person-centered-typography.json';
 import {readNdjsonResponse} from './shared/ndjson.js';
 import {coverageGaps} from './shared/motion.js';
 import './styles/tailwind.css';
@@ -128,6 +129,10 @@ function App() {
        <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
          applySpec(sampleSpec);setBrief(null);setMessage('Demo V2 cargada sin utilizar IA: compara este resultado con el generado por GPT-OSS.');
        }}>Ver demo del motor V2 (sin IA)</button>
+       <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
+         applySpec(personCenteredTypography);setBrief(null);
+         setMessage('Plantilla de texto para persona centrada cargada: 9 segundos, dos columnas y palabras completas.');
+       }}>Cargar plantilla · Texto a ambos lados de la persona</button>
        <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
          applySpec(createStressDemo(format));setBrief(null);setMessage('Prueba extrema 60 s ('+(format==='portrait'?'9:16':'16:9')+') cargada: 8 escenas, 32 grupos y 65 elementos, sin IA.');
        }}>Cargar prueba extrema · 60 segundos · formato elegido</button>
