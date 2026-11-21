@@ -23,9 +23,9 @@ export function buildCreativeBriefPrompt({format,duration}) {
     'Cada beat debe tener un punto focal claro, una transición hacia el siguiente y continuidad visual. '+
     'Diseña una jerarquía consistente, ritmo creciente y composición limpia como en una cabecera documental premium. '+
     'El diseño será una SUPERPOSICIÓN con transparencia alfa; no utilices fondos opacos ni audio. '+
-    'Puedes plantear titulares, subtítulos, etiquetas, cifras verificadas, barras y anillos, separadores, citas e iconos SVG. '+
+    'Puedes plantear titulares, subtítulos, etiquetas, cifras verificadas, barras y anillos, separadores, citas, cartelas callout, tipografía cinética kinetic, órbitas SVG decorativas orbit e iconos. '+
     'El motor solo permite texto, iconos locales, progresos y separadores: NO imágenes, fotos, mapas reales, vídeo externo, partículas ni 3D. '+
-    'Los efectos posibles son fade, left, right, up, down, pop, zoom, rotate, blur, wipe y spring. '+
+    'Los efectos posibles son fade, left, right, up, down, pop, zoom, rotate, blur, wipe y spring. kinetic revela palabras progresivamente; orbit dibuja una órbita decorativa, callout muestra una cartela destacada. '+
     'Cada plano dura varios segundos y contiene grupos sincronizados con elementos internos. '+
     'Protege márgenes, evita ocupar toda la pantalla y usa contraste fuerte sobre cualquier metraje de fondo. '+
     'Conserva literalmente los nombres, hechos y cifras aportados: NUNCA inventes datos, porcentajes ni citas. '+
@@ -48,7 +48,7 @@ export function buildSystemPrompt({format,duration}) {
     'Organiza 1 a 3 grupos por plano: por ejemplo, bloque tipográfico, gráfico y acento, con movimiento conjunto coherente. '+
     'En cada plano mantén al menos un elemento visible hasta 0.2 s antes del final; NO dejes segundos en negro o vacíos. '+
     'Transiciones válidas: fade,slide,zoom,cut. Presets: hero,data,comparison,quote,lower-third,minimal. '+
-    'Tipos: title,subtitle,tag,stat,bar,icon,divider,ring,quote,pill. '+
+    'Tipos: title,subtitle,tag,stat,bar,icon,divider,ring,quote,pill,kinetic,orbit,callout. '+
     'Iconos: globe,chart,trend,alert,flag,bolt,shield,users,cpu,landmark,factory,satellite,rocket,network,pin,building,coins,news. '+
     'Colores: white,lime,red,cyan,yellow,gray,orange,violet,pink. '+
     'Animaciones de grupo y elemento: up,left,pop,fade,right,down,zoom,rotate,blur,wipe,spring. '+
