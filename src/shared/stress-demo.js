@@ -22,7 +22,29 @@ const MOTIONS=['spring','zoom','left','right'];
 const TRANSITIONS=['fade','slide','zoom','cut','fade','slide','zoom','fade'];
 const PRESETS=['hero','data','comparison','minimal','comparison','lower-third','data','hero'];
 
-function placement(type,group,index){
+function placement(type,group,index,format){
+  if(format==='portrait'){
+    if(group===0){
+      if(type==='tag')return [8,8,84,41];
+      if(type==='divider')return [8,38,72,19];
+      return [8,19,84,93];
+    }
+    if(group===1){
+      if(index===0)return [8,44,84,46];
+      return [65,51,27,66];
+    }
+    if(group===2){
+      if(index===0)return [8,70,80,39];
+      return [8,64,75,22];
+    }
+    if(index===0){
+      if(type==='stat'||type==='bar')return [8,81,80,40];
+      return [8,87,80,32];
+    }
+    if(type==='icon')return [75,8,15,58];
+    if(type==='ticker')return [8,80,82,26];
+    return [8,77,80,28];
+  }
   if(group===0){
     if(type==='tag')return [8,10,46,36];
     if(type==='divider')return [8,48,47,21];
@@ -60,7 +82,8 @@ function caption(type,scene){
 const mockValue=(scene,type)=>['ring','bar'].includes(type)?[72,64,53,87,91,56,68,79][scene]:
   type==='stat'?[860,124,390,42,720,315,96,204][scene]:0;
 
-export function createStressDemo(){
+export function createStressDemo(format='landscape'){
+  const orientation=format==='portrait'?'portrait':'landscape';
   const scenes=[];
   for(let scene=0;scene<8;scene++){
     const hold=7.5;
@@ -68,7 +91,7 @@ export function createStressDemo(){
       const at=[0,0.45,1,1.45][group];
       const length=hold-at;
       const elements=types.map((type,index)=>{
-        const [x,y,width,size]=placement(type,group,index);
+        const [x,y,width,size]=placement(type,group,index,orientation);
         const start=index*0.25+0.08;
         return {
           type,text:caption(type,scene),value:mockValue(scene,type),icon:ICONS[scene],
@@ -87,5 +110,5 @@ export function createStressDemo(){
     scenes.push({at:Number((scene*7.5).toFixed(2)),hold,transition:TRANSITIONS[scene],
       preset:PRESETS[scene],groups});
   }
-  return {format:'landscape',duration:60,scenes};
+  return {format:orientation,duration:60,scenes};
 }
