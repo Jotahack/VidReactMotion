@@ -12,21 +12,24 @@
     "check": "npm test && node --check server/index.mjs"
   },
   "dependencies": {
-    "@remotion/bundler": "^4.0.0",
-    "@remotion/player": "^4.0.0",
-    "@remotion/renderer": "^4.0.0",
+    "@remotion/bundler": "4.0.539",
+    "@remotion/player": "4.0.539",
+    "@remotion/renderer": "4.0.539",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.0"
+    "remotion": "4.0.539",
+    "@remotion/tailwind-v4": "4.0.539",
+    "tailwindcss": "^4.1.0"
   },
   "devDependencies": {
-    "@remotion/cli": "^4.0.0",
+    "@remotion/cli": "4.0.539",
     "@vitejs/plugin-react": "^4.3.1",
     "concurrently": "^9.1.2",
-    "vite": "^5.4.15"
+    "vite": "^5.4.15",
+    "@tailwindcss/vite": "^4.1.0"
   },
   "engines": {
     "node": ">=20.11.0"
