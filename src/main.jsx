@@ -11,7 +11,7 @@ function App() {
  const [spec,setSpec]=useState(sampleSpec);
  const [format,setFormat]=useState('landscape');
  const [duration,setDuration]=useState(sampleSpec.duration);
- const [prompt,setPrompt]=useState('Crea un titular de última hora sobre la economía mundial. Etiqueta roja y contador animado hasta 72%. Sin fondo.');
+ const [prompt,setPrompt]=useState('Crea un motion graphic de DEMOSTRACIÓN: titular EL FUTURO ESTÁ EN MOVIMIENTO, tipografía cinética, órbita SVG y anillo de 72% como DATO FICTICIO. Sin fondo.');
  const [brief,setBrief]=useState(null);
  const [models,setModels]=useState([]);
  const [model,setModel]=useState('');
@@ -94,6 +94,9 @@ function App() {
          </select><button className="secondary" onClick={refreshModels} title="Actualizar">↻</button>
        </div></div>
        <button disabled={Boolean(busy)} onClick={generate}>{busy==='generate'?'Refinando y generando…':'✦ Generar con IA'}</button>
+       <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
+         applySpec(sampleSpec);setBrief(null);setMessage('Demo V2 cargada sin utilizar IA: compara este resultado con el generado por GPT-OSS.');
+       }}>Ver demo del motor V2 (sin IA)</button>
        {brief&&<details className="brief">
          <summary>Briefing creativo utilizado</summary>
          <p><strong>Titular:</strong> {brief.headline}</p>
