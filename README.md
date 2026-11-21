@@ -1,23 +1,98 @@
 # VidReactMotion
 
-Aplicación para crear **overlays animados con transparencia** desde prompts, con React y Remotion.
+**Generador de overlays y animaciones con fondo transparente mediante prompts.** Editor React y render local con Remotion. La generación funciona con **LM Studio** o con una **API compatible con OpenAI** mediante clave.
 
-**En desarrollo (MVP).** El render se ejecuta localmente. La generación de escenas puede utilizar **LM Studio** en el ordenador o un servicio de IA con **API key**.
+> **Estado: MVP técnico.** Se incluyen editor JSON, previsualización, animaciones de títulos/etiquetas/cifras/barras/iconos y exportación MOV/WebM con alfa. No se ha validado todavía el render de extremo a extremo en tu Windows/CapCut.
 
-## Propuesta de arquitectura
+## Instalación rápida
 
-- **Frontend React + Remotion Player:** editor de escenas, previsualización y exportación.
-- **Backend ligero Node.js:** puente con proveedores IA, custodia de API keys y orquestación del render.
-- **Escenas JSON validadas:** el modelo devuelve datos estructurados; nunca ejecutamos JavaScript generado por IA.
-- **MOV ProRes 4444/WebM con alfa:** superposición sobre el vídeo principal en editores compatibles.
-- **Sin Django, base de datos ni Docker obligatorios** para el MVP. Un solo `npm install` y `npm run dev`.
+Requisitos: **Node.js 20.11+**, npm y conexión inicial para descargar dependencias. Si usas IA local, instala también LM Studio.
 
-El backend es útil aunque la IA se ejecute localmente: Remotion necesita renderizar, escribir archivos y gestionar recursos; las claves de APIs externas nunca deben ir en el navegador.
+En PowerShell:
 
-Documentación de instalación, configuración y arquitectura y código de la primera versión se preparan en una rama de desarrollo antes de integrarlos.
+```powershell
+git clone https://github.com/Jotahack/VidReactMotion.git
+cd VidReactMotion
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
 
-## Enlaces
+Si la rama aún está en revisión, descarga la rama `feat/modular-local-mvp` o cambia a ella con `git switch feat/modular-local-mvp`.
 
-- [LM Studio](https://lmstudio.ai/)
-- [Remotion](https://www.remotion.dev/)
+Abre **http://127.0.0.1:5173**. La API escucha en **127.0.0.1:3131**. Puedes previsualizar y renderizar la **escena de prueba sin conectar ninguna IA**.
+
+## IA local — LM Studio
+
+1. Descarga LM Studio desde **https://lmstudio.ai/**.
+2. Descarga y carga un modelo *instruct* que admita salida JSON estructurada.
+3. Activa su servidor local compatible con OpenAI (habitualmente `http://127.0.0.1:1234/v1`).
+4. Deja el archivo `.env` así:
+
+```dotenv
+AI_PROVIDER=lmstudio
+AI_BASE_URL=http://127.0.0.1:1234/v1
+AI_API_KEY=
+AI_MODEL=
+```
+
+5. Ejecuta `npm run dev`, actualiza la lista de modelos, selecciona uno y escribe tu prompt.
+
+Si el servidor usa otro puerto, actualiza `AI_BASE_URL`.
+
+## IA por API key
+
+Cambia el `.env`:
+
+```dotenv
+AI_PROVIDER=compatible
+AI_BASE_URL=https://api.openai.com/v1
+AI_API_KEY=TU_CLAVE_PRIVADA
+AI_MODEL=ID_DEL_MODELO_COMPATIBLE
+```
+
+También se admiten otros proveedores con endpoints estilo OpenAI, si el modelo admite `response_format: json_schema`. `AI_MODEL` sirve para proveedores que no ofrezcan `GET /models`. **Nunca subas `.env` a Git**, ni pegues la API key en el frontend. Con una API externa el prompt sale a ese proveedor; el vídeo se sigue renderizando localmente.
+
+## Flujo de trabajo
+
+1. Escribe un prompt como «Etiqueta roja ÚLTIMA HORA, titular sobre comercio mundial y contador hasta 72, estilo informativo».
+2. Selecciona horizontal **1920 × 1080** o vertical **1080 × 1920**, duración **3–12 s**.
+3. Genera, revisa y, si quieres, ajusta el JSON de escena.
+4. Pulsa **Renderizar transparente** y descarga **MOV ProRes 4444** o **WebM VP8**. Los archivos quedan también en `outputs/`.
+
+El patrón ajedrezado es **solo la guía de transparencia de la vista previa**. Un MP4 H.264 convencional no conserva ese alfa. La importación de MOV alfa depende del editor y versión de CapCut: hay que probarla en el equipo final. Remotion puede descargar un navegador compatible en el primer render.
+
+## Comandos
+
+| Comando | Para qué sirve |
+| --- | --- |
+| `npm run dev` | Arrancar React y API |
+| `npm run studio` | Abrir Remotion Studio |
+| `npm test` | Pruebas unitarias |
+| `npm run check` | Pruebas y sintaxis de API |
+
+## Diseño del código
+
+```text
+server/
+  ai/          proveedor de IA y prompt
+  render/      servicio de exportación alfa
+  routes/      API HTTP y validaciones
+  config.mjs   configuración y secretos
+src/
+  remotion/    componentes de vídeo
+  shared/      contrato JSON compartido y normalización
+  main.jsx     interfaz React
+tests/         pruebas sin depender del proveedor
+docs/          arquitectura y guía de desarrollo
+```
+
+Usamos **un solo backend Node.js ligero**, sin Django, base de datos ni Docker obligatorios. Aplica SOLID/DRY/KISS: rutas y servicios separados, adaptadores de IA intercambiables, contratos compartidos y cero microservicios prematuros.
+
+- [Arquitectura y decisiones](docs/ARCHITECTURE.md)
+- [Guía de desarrollo y checklist de validación](docs/DEVELOPMENT.md)
+- [Documentación de LM Studio](https://lmstudio.ai/docs/developer/openai-compat)
+- [Remotion y vídeo transparente](https://www.remotion.dev/docs/transparent-videos)
 - [Licencia de Remotion](https://www.remotion.dev/docs/license/pricing)
+
+**Límites de seguridad:** la API escucha solo en `127.0.0.1`, no se ejecuta código procedente del LLM y las claves se almacenan únicamente en el entorno del servidor. No expongas el servidor públicamente sin autenticación, controles de recursos y auditoría adicional.
