@@ -1,6 +1,6 @@
 # Pipeline de generación por IA — VidReactMotion
 
-> **Estado:** la fase A está implementada en la PR #1 (pendiente de pruebas reales con LM Studio/Qwen3 4B y render en Windows). Las fases B/C son propuestas. Electron permanece aparcado.
+> **Estado:** la fase A está implementada en la PR #1 (pendiente de pruebas reales con LM Studio/GPT-OSS 20B y render en Windows). Las fases B/C son propuestas. Electron permanece aparcado.
 
 ## Problema identificado
 
@@ -39,7 +39,7 @@ React: muestra briefing + Remotion Player -> exportación alfa sin cambios
 El usuario sigue escribiendo un prompt sencillo y pulsando **Generar con IA**. La aplicación explica qué dirección creativa ha usado el modelo. No se pide iniciar sesión ni se añade base de datos.
 
 **Límites del MVP:**
-- El método hace **dos inferencias consecutivas**, lo que consume más tiempo y tokens que una sola; puede ser más lento con Qwen3 4B y tendrá mayor coste si se usa una API de pago.
+- El método hace **dos inferencias consecutivas**, lo que consume más tiempo y tokens que una sola; puede ser más lento con modelos de razonamiento como GPT-OSS 20B y tendrá mayor coste si se usa una API de pago.
 - Ambos pasos dependen de un modelo con soporte real para `response_format: json_schema`. El briefing se valida antes de intentar generar la escena.
 - No se inventan estadísticas ni noticias; si faltan datos, se usan mensajes genéricos sin cifra. Las salidas del LLM requieren igualmente revisión humana.
 - El prompt de sistema limita recursos a los ya implementados: no solicita 3D, vídeos, partículas, ni mapas reales inexistentes.
@@ -48,13 +48,15 @@ El usuario sigue escribiendo un prompt sencillo y pulsando **Generar con IA**. L
 
 ## Prueba en LM Studio
 
-1. Iniciar LM Studio y cargar **Qwen3 4B Instruct 2507 Q4_K_M** (o modelo que soporte esquema JSON).
+1. Iniciar LM Studio y cargar **GPT-OSS 20B**, el modelo que se está utilizando, o cualquier otro compatible con JSON Schema. Verificar en su versión de LM Studio que el modo estructurado funciona con él.
 2. Desde la rama `feat/modular-local-mvp`, ejecutar `npm install`, `npm test`, `npm run dev`.
 3. Crear la misma escena varias veces con esta idea: «Titular urgente sobre comercio mundial, serio y elegante». Revisar que **no se introduzcan cifras inventadas**.
 4. Repetir con «Animación minimalista: EL MUNDO CAMBIA» en **16:9** y **9:16** y duración de 6 s.
 5. Probar «72 % de avance; etiqueta ÚLTIMA HORA» y verificar que la barra use 72 y no otra cifra.
 6. Abrir «Briefing creativo utilizado» y comparar intención, copy, color, tiempos, distribución y resultado visual.
 7. Exportar un MOV alfa y colocarlo sobre vídeo real en CapCut. La presencia de alfa está **pendiente de validar en el equipo**.
+
+**Comparación opcional, no requisito:** Qwen3 4B Instruct puede servir como referencia de velocidad y consumo frente a GPT-OSS 20B, pero no es el modelo por defecto ni se exige descargarlo. GPT-OSS 20B requiere más memoria y puede ser más lento en equipos con poca VRAM; su calidad efectiva debe probarse con los mismos prompts. Si se producen respuestas JSON vacías, inválidas o truncadas, comprobar el límite de tokens, la configuración de razonamiento y el soporte del modo estructurado en la versión instalada de LM Studio.
 
 **Evaluación de cada escena:** claridad a tamaño móvil, legibilidad, contraste con metraje real, ausencia de recortes, ausencia de datos inventados, ritmo, coherencia y correcta transparencia. Registrar ejemplos fallidos antes de ampliar el número de efectos.
 
