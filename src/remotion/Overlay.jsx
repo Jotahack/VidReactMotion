@@ -71,6 +71,20 @@ function KineticWords({text,elapsed,size}) {
   </div>;
 }
 
+// Each word is an indivisible inline box. This is more robust than
+// overflow-wrap or word-break CSS alone when imported JSON has narrow widths.
+function TextWithoutBrokenWords({text}) {
+  return String(text??'').split('\n').map((line,lineIndex)=>
+    <React.Fragment key={lineIndex}>
+      {lineIndex>0&&<br/>}
+      {line.split(/(\s+)/u).filter(Boolean).map((part,index)=>
+        /^\s+$/u.test(part)?<React.Fragment key={index}>{part}</React.Fragment>:
+        <span key={index} className="vrm-whole-word">{part}</span>
+      )}
+    </React.Fragment>
+  );
+}
+
 function Element({element:e}) {
   const frame=useCurrentFrame();
   const {fps,width:canvasWidth}=useVideoConfig();
@@ -90,7 +104,8 @@ function Element({element:e}) {
   const Icon=ICONS[e.icon]||Globe2;
   const requestedSize=Math.round(e.size*(canvasWidth<1500?0.95:1));
   const isText=['title','subtitle','kinetic','quote','callout','pill','tag'].includes(e.type);
-  const size=isText?fitTextSize({text:e.text,size:requestedSize,width:e.width,canvasWidth}):requestedSize;
+  const size=isText?fitTextSize({text:e.text,size:requestedSize,width:e.width,canvasWidth,
+    fontWeight:e.type==='subtitle'?600:900}):requestedSize;
   const s={
     position:'absolute',left:`${e.x}%`,top:`${e.y}%`,width:`${e.width}%`,
     color,fontFamily:'Inter,Arial,sans-serif',fontSize:size,
@@ -185,7 +200,7 @@ function Element({element:e}) {
   return <div className={e.type==='subtitle'
     ?'pointer-events-none absolute vrm-glow font-semibold tracking-tight'
     :'pointer-events-none absolute vrm-title font-black tracking-[-0.035em]'}
-    style={s}>{e.text}</div>;
+    style={s}><TextWithoutBrokenWords text={e.text}/></div>;
 }
 
 export const Overlay=({spec})=><AbsoluteFill className="vrm-overlay" style={{backgroundColor:'transparent'}}>
