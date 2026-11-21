@@ -11,6 +11,7 @@
     "build": "vite build",
     "bundle:check": "node scripts/check-remotion-bundle.mjs",
     "render:smoke": "node scripts/stress-render-smoke.mjs",
+    "render:alpha:smoke": "node scripts/render-alpha-smoke.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "npm test && node --check server/index.mjs"
   },
