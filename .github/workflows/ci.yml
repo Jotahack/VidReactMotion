@@ -54,6 +54,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: person-centered-typography
-          path: /tmp/vrm-person-type-smoke.png
+          path: |
+            /tmp/vrm-person-type-smoke.png
+            /tmp/vrm-legacy-longword-smoke.png
           if-no-files-found: ignore
           retention-days: 7
