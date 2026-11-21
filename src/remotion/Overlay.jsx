@@ -95,6 +95,40 @@ function Element({element:e}) {
     ...presetTransform(e.animation,progress,springProgress)
   };
 
+  if(e.type==='pulse') {
+    const box=Math.max(140,Math.min(340,size*3.4));
+    const phase=(elapsed/(fps*2))%1;
+    return <div className="pointer-events-none absolute" style={s}>
+      <svg width={box} height={box} viewBox="0 0 300 300" aria-hidden="true">
+        {[0,1,2].map(index=>{
+          const t=(phase+index/3)%1;
+          return <circle key={index} cx="150" cy="150" r={25+t*116}
+            fill="none" stroke={color} strokeWidth={3.5*(1-t)} opacity={(1-t)*0.85}/>;
+        })}
+        <circle cx="150" cy="150" r="17" fill={color} opacity="0.85"/>
+        <circle cx="150" cy="150" r="7" fill="white"/>
+      </svg>
+    </div>;
+  }
+  if(e.type==='beam') {
+    const sweep=((elapsed/(fps*2.8))%1)*100;
+    return <div className="pointer-events-none absolute" style={s}>
+      <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/15">
+        <div className="absolute inset-0" style={{background:`linear-gradient(90deg,transparent,${color},transparent)`}}/>
+        <span className="absolute top-0 h-full w-[14%] rounded-full bg-white/90"
+          style={{left:(sweep-7)+'%',filter:'blur(5px)'}}/>
+      </div>
+    </div>;
+  }
+  if(e.type==='ticker') {
+    const speed=elapsed/fps*50;
+    const content=(e.text||'MOTION')+'    ✦    '+(e.text||'MOTION')+'    ✦    '+(e.text||'MOTION');
+    return <div className="pointer-events-none absolute overflow-hidden rounded-lg border-y border-white/20 bg-black/35 py-3"
+      style={{...s,whiteSpace:'nowrap',fontSize:size*0.65}}>
+      <div className="inline-block font-black uppercase tracking-[0.18em]"
+        style={{transform:'translateX(-'+(speed%200).toFixed(2)+'px)'}}>{content}</div>
+    </div>;
+  }
   if (e.type==='kinetic') return <div className="pointer-events-none absolute" style={s}>
     <KineticWords text={e.text} elapsed={elapsed} size={size}/>
   </div>;
