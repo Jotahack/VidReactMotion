@@ -75,6 +75,9 @@ function normalizeGroup(group,maxTime,format) {
   const hold=Math.max(limit(group.hold,0.15,maxTime-at,maxTime-at),maxTime-at);
   const elements=group.elements.slice(0,10).map(e=>normalizeElement(e,hold,format)).filter(Boolean);
   if(!elements.length) return null;
+  // Repair a quiet tail by keeping the latest active layer on screen until the shot ends.
+  const latest=elements.reduce((best,e)=>e.at+e.hold>best.at+best.hold?e:best,elements[0]);
+  if(hold-(latest.at+latest.hold)>0.4)latest.hold=Number((hold-latest.at).toFixed(3));
   return {
     at,hold,motion:choose(group.motion,VALID_ANIMATIONS,'fade'),elements,
     ...(Array.isArray(group.keyframes)&&group.keyframes.length?
@@ -112,7 +115,7 @@ export function normalizeSpec(raw,forced={}) {
   const scenes=[];
   for(let i=0;i<candidates.length;i++){
     const candidate=candidates[i];
-    const at=i===0?0:scenes.at(-1).at+scenes.at(-1).hold;
+    const at=scenes.length===0?0:scenes.at(-1).at+scenes.at(-1).hold;
     const remaining=duration-at;
     if(remaining<0.4)break;
     const isLast=i===candidates.length-1;
