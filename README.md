@@ -4,6 +4,12 @@
 
 > **Estado: MVP técnico.** Se incluyen editor JSON, previsualización, animaciones de títulos/etiquetas/cifras/barras/iconos y exportación MOV/WebM con alfa. No se ha validado todavía el render de extremo a extremo en tu Windows/CapCut.
 
+## Aplicación de escritorio (plan de evolución)
+
+Queremos que VidReactMotion se instale en Windows como una app normal **sin login ni base de datos**, desde un icono. La opción elegida para construirla es **Electron + React + Remotion** (no es necesario reescribir React en React Native).
+
+**Estado actual:** la PR #1 contiene el MVP web-local. **Todavía no hay instalador .exe ni `npm run dev:desktop`**. La arquitectura, seguridad, persistencia local y las pruebas necesarias están documentadas en [docs/DESKTOP.md](docs/DESKTOP.md). En la versión de escritorio final, Node/Chromium irán empaquetados; LM Studio/modelo seguirán siendo requisitos del modo IA local.
+
 ## Instalación rápida
 
 Requisitos: **Node.js 20.11+**, npm y conexión inicial para descargar dependencias. Si usas IA local, instala también LM Studio.
