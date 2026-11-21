@@ -12,7 +12,7 @@ function plan(count){return {shots:Array.from({length:count},(_,i)=>({
 }))};}
 
 function shot(target){
-  const distribution=target===9?[3,2,2,2]:target===7?[2,2,2,1]:[2,2,2,2];
+  const distribution=target===9?[3,2,2,2]:target===7?[2,2,2,1]:target===6?[2,2,1,1]:target===4?[1,1,1,1]:[2,2,2,2];
   return {groups:distribution.map((count,group)=>({
     motion:['spring','left','right','blur'][group],at:group*0.2,hold:7.5-group*0.2,
     elements:Array.from({length:count},(_,i)=>({
@@ -36,7 +36,7 @@ function fakeProvider(responses){
 }
 
 test('genera briefing, storyboard y planos independientes con progreso',async()=>{
-  const {provider,calls}=fakeProvider([brief,plan(2),shot(8),shot(8)]);
+  const {provider,calls}=fakeProvider([brief,plan(2),shot(4),shot(4)]);
   const progress=[];
   const result=await provider.generateScene({
     model:'gpt-oss-20b',prompt:'Un titular de demo',format:'landscape',duration:6,
@@ -49,7 +49,7 @@ test('genera briefing, storyboard y planos independientes con progreso',async()=
   assert.equal(calls[0].body.messages[1].content,'Un titular de demo');
   assert.equal(result.scene.scenes.length,2);
   assert.equal(result.metrics.groups,8);
-  assert.equal(result.metrics.elements,16);
+  assert.equal(result.metrics.elements,8);
   assert.equal(result.metrics.keyframes,24);
   assert.equal(progress[0].stage,'brief');
   assert.equal(progress.at(-1).stage,'complete');
