@@ -152,7 +152,8 @@ export function analyzeSpec(raw) {
     })));
     for(let a=0;a<items.length;a++)for(let b=a+1;b<items.length;b++){
       const p=items[a],q=items[b];
-      if(p.type==='divider'||q.type==='divider'||p.type==='icon'||q.type==='icon')continue;
+      if(['divider','icon','orbit','pulse','beam'].includes(p.type)||
+         ['divider','icon','orbit','pulse','beam'].includes(q.type))continue;
       const timeOverlap=Math.min(p.end,q.end)-Math.max(p.start,q.start)>0.6;
       const xOverlap=Math.min(p.x+p.width,q.x+q.width)-Math.max(p.x,q.x)>10;
       const yOverlap=Math.min(p.y+p.height,q.y+q.height)-Math.max(p.y,q.y)>2;
