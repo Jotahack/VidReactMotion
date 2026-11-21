@@ -10,6 +10,7 @@ function App() {
  const [format,setFormat]=useState('landscape');
  const [duration,setDuration]=useState(6);
  const [prompt,setPrompt]=useState('Crea un titular de última hora sobre la economía mundial. Etiqueta roja y contador animado hasta 72%. Sin fondo.');
+ const [brief,setBrief]=useState(null);
  const [models,setModels]=useState([]);
  const [model,setModel]=useState('');
  const [provider,setProvider]=useState('LM Studio');
@@ -40,11 +41,11 @@ function App() {
  }
  async function generate() {
    if(!model){setMessage('Selecciona un modelo de IA.');return;}
-   setBusy('generate');setFile('');setMessage('Generando una escena JSON validada…');
+   setBusy('generate');setFile('');setBrief(null);setMessage('Refinando la idea y generando una escena validada…');
    try {
      const data=await request('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
        body:JSON.stringify({prompt,model,format,duration})});
-     applySpec(data.spec);setMessage('Escena creada. Revisa la vista previa.');
+     applySpec(data.spec);setBrief(data.brief||null);setMessage('Escena creada. Consulta el briefing creativo y revisa la vista previa.');
    } catch(error){setMessage('Error de generación: '+error.message);}
    finally{setBusy('');}
  }
@@ -86,7 +87,16 @@ function App() {
            {models.map(m=><option key={m} value={m}>{m}</option>)}
          </select><button className="secondary" onClick={refreshModels} title="Actualizar">↻</button>
        </div></div>
-       <button disabled={Boolean(busy)} onClick={generate}>{busy==='generate'?'Generando…':'✦ Generar con IA'}</button>
+       <button disabled={Boolean(busy)} onClick={generate}>{busy==='generate'?'Refinando y generando…':'✦ Generar con IA'}</button>
+       {brief&&<details className="brief">
+         <summary>Briefing creativo utilizado</summary>
+         <p><strong>Titular:</strong> {brief.headline}</p>
+         {brief.supportingCopy&&<p><strong>Texto secundario:</strong> {brief.supportingCopy}</p>}
+         <p><strong>Dirección visual:</strong> {brief.visualDirection}</p>
+         <p><strong>Composición:</strong> {brief.layout}</p>
+         <p><strong>Animación:</strong> {brief.animationPlan}</p>
+         <p><strong>Recursos:</strong> {brief.assets}</p>
+       </details>
        <div className="separator"/>
        <label>Exportación</label><select value={codec} onChange={e=>setCodec(e.target.value)}>
          <option value="mov">MOV · ProRes 4444 con alfa</option><option value="webm">WebM · VP8 con alfa</option>
