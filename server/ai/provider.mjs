@@ -28,7 +28,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
     });
     const content=body.choices?.[0]?.message?.content;
     if (typeof content!=='string') throw new Error('El modelo no devolvió texto. Usa un modelo instruct compatible con JSON.');
-    try {return JSON.parse(content.replace(/^`{3}(?:json)?\\s*/,'').replace(/\\s*`{3}$/,''));}
+    try {return JSON.parse(content.replace(/^`{3}(?:json)?\s*/,'').replace(/\s*`{3}$/,''));}
     catch {throw new Error('JSON inválido devuelto por el modelo.');}
   }
 
