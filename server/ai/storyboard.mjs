@@ -33,7 +33,12 @@ export function targetShotCount(duration){
   if(duration<=44)return 6;
   return 8;
 }
-export function targetElementCount(index,count){return count===8?([9,8,8,8,9,8,8,7][index]??8):8;}
+export function targetElementCount(index,count){
+  if(count===8)return [9,8,8,8,9,8,8,7][index]??8;
+  if(count===6)return 7;
+  if(count===3||count===4)return 6;
+  return 4;
+}
 
 export function normalizeStoryboardPlan(raw,duration,brief){
   const count=targetShotCount(duration);
@@ -106,7 +111,7 @@ export function buildShotPrompt({planned,count,index,format,elementCount}){
   return 'Eres animador senior de Remotion. Diseña SOLO el plano '+(index+1)+' de '+count+' de un storyboard '+
     (format==='portrait'?'VERTICAL 9:16':'HORIZONTAL 16:9')+'. Duración local '+planned.hold+' segundos. '+
     'Devuelve SOLO un JSON con groups[] siguiendo shotJsonSchema; NO escribas at/hold de escena. '+
-    'Crea EXACTAMENTE 4 grupos, aproximadamente '+elementCount+' elementos en total ('+(elementCount===9?'3,2,2,2':elementCount===7?'2,2,2,1':'2,2,2,2')+'). '+
+    'Crea EXACTAMENTE 4 grupos, aproximadamente '+elementCount+' elementos en total ('+(elementCount===9?'3,2,2,2':elementCount===7?'2,2,2,1':elementCount===6?'2,2,1,1':elementCount===4?'1,1,1,1':'2,2,2,2')+'). '+
     'Distribuye 4 grupos por regiones visuales distintas: encabezado, gráfico, dato y acento/cierre. '+
     'No coloques todos los elementos en el centro ni superpongas bloques grandes. '+
     'Cada grupo exige motion,at,hold,elements. Empieza el primer grupo en at=0; escalona los demás entre 0.15 y 1.3 s. '+
