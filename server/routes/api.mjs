@@ -56,6 +56,30 @@ export function createApiRouter({config,ai,renderer}) {
     }finally{if(!res.writableEnded)res.end();}
   });
 
+  router.post('/render/stream',async(req,res)=>{
+    let spec,codec;
+    try{
+      codec=req.body?.codec;
+      if(!['mov','webm'].includes(codec)){const e=new Error('Usa mov o webm.');e.status=400;throw e;}
+      spec=normalizeSpec(req.body.spec);
+    }catch(error){res.status(error.status||400).json({error:error.message});return;}
+    res.status(200);
+    res.setHeader('Content-Type','application/x-ndjson; charset=utf-8');
+    res.setHeader('Cache-Control','no-cache, no-transform');
+    res.setHeader('X-Accel-Buffering','no');
+    res.flushHeaders();
+    const controller=new AbortController();
+    res.on('close',()=>{if(!res.writableEnded)controller.abort();});
+    const send=data=>{if(!res.destroyed&&!res.writableEnded)res.write(JSON.stringify(data)+'\n');};
+    try{
+      const result=await renderer.render(spec,codec,{
+        signal:controller.signal,onProgress:progress=>send({type:'progress',...progress})
+      });
+      send({type:'result',...result});
+    }catch(error){
+      if(!controller.signal.aborted)send({type:'error',message:String(error.message).slice(0,450)});
+    }finally{if(!res.writableEnded)res.end();}
+  });
   router.post('/render',async(req,res)=>{
     try{
       if(!['mov','webm'].includes(req.body?.codec))return res.status(400).json({error:'Usa mov o webm.'});
