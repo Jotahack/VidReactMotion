@@ -95,7 +95,7 @@ export function assembleStoryboard(plan,shots,format,duration){
     }));
     return {at:planned.at,hold:planned.hold,transition:planned.transition,preset:planned.preset,groups};
   });
-  return {format,duration,scenes};
+  return {format,duration,scenes,transitionEngine:scenes.length>1?'remotion':undefined};
 }
 
 export function buildStoryboardPlanPrompt({format,duration,count}){
