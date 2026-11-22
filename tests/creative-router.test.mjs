@@ -67,3 +67,13 @@ test('ejemplo de tarjeta Montserrat mantiene alfa y caja segura',async()=>{
   assert.ok(e.x>=8&&e.x+e.width<=94);
   assert.ok(e.y+e.height<=90);
 });
+
+
+test('los párrafos de información conservan todas las palabras, incluso después del carácter 120',async()=>{
+  const raw=JSON.parse(await readFile(new URL('../examples/biotipos-info-card.json',import.meta.url),'utf8'));
+  const original=raw.scenes[0].groups[0].elements[0].text;
+  assert.ok(original.length>120,'El fixture debe superar el antiguo límite');
+  const spec=normalizeSpec(raw);
+  assert.equal(spec.scenes[0].groups[0].elements[0].text,original);
+  assert.ok(spec.scenes[0].groups[0].elements[0].text.endsWith('clasificación.'));
+});
