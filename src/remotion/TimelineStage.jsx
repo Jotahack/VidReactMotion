@@ -55,22 +55,19 @@ function Shot({scene}) {
  */
 function SceneTransitions({spec}) {
   const {fps}=useVideoConfig();
-  const shots=spec.scenes;
   const overlap=Math.min(10,Math.max(2,Math.round(fps*0.28)));
+  const children=spec.scenes.flatMap((scene,i)=>{
+    const frames=Math.max(1,Math.round(scene.hold*fps)+(i>0?overlap:0));
+    const part=<TransitionSeries.Sequence key={'shot-'+i} durationInFrames={frames}>
+      <Shot scene={{...scene,at:0,hold:frames/fps,transition:'cut'}}/>
+    </TransitionSeries.Sequence>;
+    if(i===0)return [part];
+    return [<TransitionSeries.Transition key={'transition-'+i}
+      presentation={scene.transition==='slide'?slide({direction:'from-right'}):fade()}
+      timing={linearTiming({durationInFrames:overlap})}/>,part];
+  });
   return <AbsoluteFill style={{background:'transparent',overflow:'hidden'}}>
-    <TransitionSeries>
-      {shots.map((scene,i)=>{
-        const frames=Math.max(1,Math.round(scene.hold*fps)+(i>0?overlap:0));
-        return <React.Fragment key={i}>
-          {i>0&&<TransitionSeries.Transition
-            presentation={scene.transition==='slide'?slide({direction:'from-right'}):fade()}
-            timing={linearTiming({durationInFrames:overlap})}/>}
-          <TransitionSeries.Sequence durationInFrames={frames}>
-            <Shot scene={{...scene,at:0,hold:frames/fps,transition:'cut'}}/>
-          </TransitionSeries.Sequence>
-        </React.Fragment>;
-      })}
-    </TransitionSeries>
+    <TransitionSeries>{children}</TransitionSeries>
   </AbsoluteFill>;
 }
 
