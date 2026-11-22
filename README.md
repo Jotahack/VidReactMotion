@@ -67,6 +67,19 @@ Selecciona **Horizontal 16:9** o **Vertical 9:16** y pulsa **«Cargar prueba ext
 
 En CI se ejecutan pruebas unitarias, compilación de Vite y Remotion, renders PNG con transparencia y una prueba corta de ProRes 4444 alfa. **La compatibilidad final con tu CapCut y el tiempo de render de 60s en Windows deben comprobarse en tu equipo.**
 
+## Mejoras de calidad V2.1
+
+La app dispone ahora de **modos de composición**: automático, solo tipografía, tarjeta informativa, lista y motion graphics avanzado. En los modos sencillos GPT-OSS realiza una inferencia de contenido y el motor controla directamente posiciones, tipografía, tiempos y legibilidad; ya no fuerza cuatro grupos por plano.
+
+- **Montserrat local**, además de Inter y Arial, seleccionable en interfaz y JSON.
+- **infoCard**, contenedor con título, explicación, fondo semitransparente y altura proporcional.
+- Texto de una sola línea, ajuste automático, elementos estáticos y clips de **1 a 60 segundos**.
+- Zonas de composición configurables y vista previa sobre vídeo o imagen de referencia local (sin incluirla en exportación).
+- Avisos de legibilidad, márgenes, solapamientos y huecos de tiempo.
+- Botón de ejemplo **Tarjeta BIOTIPOS con Montserrat**.
+
+La clasificación automática de prompts es heurística, y las comprobaciones no sustituyen una revisión visual del vídeo. Consulta [la guía de calidad V2.1](docs/QUALITY_V2_1.md).
+
 ## Flujo de trabajo
 
 1. Escribe un prompt como «Etiqueta roja ÚLTIMA HORA, titular sobre comercio mundial y contador hasta 72, estilo informativo».
