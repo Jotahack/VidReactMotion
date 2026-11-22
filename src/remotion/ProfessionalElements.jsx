@@ -15,14 +15,17 @@ function textFit(text,width,family,size,weight=FONT_WEIGHT) {
   return Math.min(size,Math.max(18,width/Math.max(text.length*0.65,1)));
 }
 function paragraphFit(text,width,height,family) {
-  try{
-    const fitted=fitTextOnNLines({text,maxBoxWidth:width,maxLines:6,fontFamily:family,
-      fontWeight:400,maxFontSize:46});
-    const lines=Math.max(1,fitted.lines?.length||1);
-    if(Number.isFinite(fitted.fontSize)&&fitted.fontSize>0)
-      return Math.max(20,Math.min(fitted.fontSize*0.96,height/(lines*1.48)));
-  }catch{/* Deterministic fallback for loading or unusual fonts. */}
-  return fitParagraphSize({text,widthPx:width,heightPx:height,requested:40,min:20});
+  // Keep paragraphs readable at presentation scale: a too-low "fit on six
+  // lines" result isn't acceptable just because it technically fits.
+  const estimated=fitParagraphSize({text,widthPx:width,heightPx:height,
+    requested:44,min:28});
+  try {
+    const measured=fitTextOnNLines({text,maxBoxWidth:width,maxLines:6,
+      fontFamily:family,fontWeight:400,maxFontSize:46});
+    if(Number.isFinite(measured.fontSize)&&measured.fontSize>estimated)
+      return Math.min(44,measured.fontSize,estimated+2);
+  }catch {/* Use conservative line-based fitting when measurement fails. */}
+  return estimated;
 }
 function variantStyle(variant) {
   switch(variant){
