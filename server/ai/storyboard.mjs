@@ -121,8 +121,8 @@ export function buildShotPrompt({planned,count,index,format,elementCount,groupCo
     'Cada elemento exige type,text,value,icon,x,y,width,size,color,animation,at,hold. '+
     'x,y,width porcentajes. Posiciones seguras: x>=8, x+width<=92 y y entre 10 y 76. '+
     'Los 4 grupos tienen suficiente espacio propio y el texto grande necesita ancho suficiente. '+
-    'Tipos disponibles title,subtitle,tag,stat,bar,icon,divider,ring,quote,pill,kinetic,orbit,callout. '+
-    'Efectos up,left,pop,fade,right,down,zoom,rotate,blur,wipe,spring. '+
+    'Tipos disponibles title,subtitle,tag,stat,bar,icon,divider,ring,quote,pill,kinetic,orbit,callout,infoCard,pulse,beam,ticker. '+
+    'Efectos up,left,pop,fade,right,down,zoom,rotate,blur,wipe,spring,none. '+
     'Colores white,lime,red,cyan,yellow,gray,orange,violet,pink. '+
     'Iconos globe,chart,trend,alert,flag,bolt,shield,users,cpu,landmark,factory,satellite,rocket,network,pin,building,coins,news. '+
     'Genera texto breve y contrastado, composición cinematográfica y ritmo fluido. '+
