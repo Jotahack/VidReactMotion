@@ -7,6 +7,12 @@ import {
 import {COLORS} from '../shared/spec.js';
 import {presetTransform} from '../shared/motion.js';
 import {fitTextSize,fitParagraphSize} from '../shared/text-layout.js';
+import {ProfessionalCard,ProfessionalLabel} from './ProfessionalElements.jsx';
+import '@fontsource/oswald/400.css';
+import '@fontsource/oswald/600.css';
+import '@fontsource/oswald/700.css';
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/700.css';
 import '@fontsource/montserrat/400.css';
 import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/700.css';
@@ -108,7 +114,10 @@ function Element({element:e}) {
   const Icon=ICONS[e.icon]||Globe2;
   const requestedSize=Math.round(e.size*(canvasWidth<1500?0.95:1));
   const isText=['title','subtitle','kinetic','quote','callout','pill','tag'].includes(e.type);
-  const family=e.font==='Montserrat'?"'Montserrat',Arial,sans-serif":e.font==='Arial'?'Arial,sans-serif':'Inter,Arial,sans-serif';
+  const family=e.font==='Montserrat'?"'Montserrat',Arial,sans-serif":
+    e.font==='Oswald'?"'Oswald',Arial,sans-serif":
+    e.font==='Playfair Display'?"'Playfair Display',Georgia,serif":
+    e.font==='Arial'?'Arial,sans-serif':'Inter,Arial,sans-serif';
   const size=isText?fitTextSize({text:e.text,size:requestedSize,width:e.width,canvasWidth,
     fontFamily:family,fontWeight:e.type==='subtitle'?600:900,
     singleLine:e.lineMode==='single',paddingPx:e.type==='callout'?58:0}):requestedSize;
@@ -122,32 +131,8 @@ function Element({element:e}) {
     ...presetTransform(e.animation,progress,springProgress)
   };
 
-  if(e.type==='infoCard') {
-    const widthPx=canvasWidth*e.width/100, heightPx=canvasHeight*e.height/100;
-    const padding=canvasWidth<1300?38:52;
-    const heading=String(e.heading||'INFORMACIÓN');
-    const headingSize=fitTextSize({text:heading,size:Math.min(76,size),
-      width:e.width,canvasWidth,fontFamily:family,fontWeight:800,
-      singleLine:true,paddingPx:padding*2});
-    const bodySize=fitParagraphSize({
-      text:e.text,widthPx:widthPx-padding*2,
-      heightPx:heightPx-padding*2-headingSize*1.5,
-      requested:canvasWidth<1300?32:40,min:23
-    });
-    return <div className="pointer-events-none absolute vrm-info-card"
-      style={{...s,height:e.height+'%',padding,display:'flex',flexDirection:'column',
-        justifyContent:'center',gap:Math.max(20,headingSize*0.42),
-        borderRadius:30,overflow:'hidden',boxSizing:'border-box'}}>
-      <div className="font-extrabold tracking-tight" style={{
-        fontSize:headingSize,lineHeight:1.12,whiteSpace:'nowrap'}}>{heading}</div>
-      <div aria-hidden="true" style={{height:4,width:'24%',backgroundColor:color,opacity:0.9}}/>
-      <div className="font-normal" style={{fontSize:bodySize,lineHeight:1.4,
-        whiteSpace:'normal',wordBreak:'normal',overflowWrap:'break-word',
-        hyphens:'none',maxWidth:'100%',minWidth:0}}>
-        {e.text}
-      </div>
-    </div>;
-  }
+  if(e.type==='infoCard') return <ProfessionalCard element={e} baseStyle={s}
+    canvasWidth={canvasWidth} canvasHeight={canvasHeight} color={color} family={family} progress={progress}/>;
   if(e.type==='pulse') {
     const box=Math.max(140,Math.min(340,size*3.4));
     const phase=(elapsed/(fps*2))%1;
@@ -188,12 +173,8 @@ function Element({element:e}) {
   if (e.type==='orbit') return <div className="pointer-events-none absolute vrm-glow" style={s}>
     <OrbitGraphic size={size} color={color} elapsed={elapsed} fps={fps}/>
   </div>;
-  if (e.type==='callout') return <div className="pointer-events-none absolute" style={s}>
-    <div className="vrm-glass inline-flex w-full items-center gap-4 rounded-xl px-5 py-4">
-      <span className="h-4 w-4 shrink-0 rounded-full" style={{backgroundColor:color,boxShadow:'0 0 20px '+color}}/>
-      <span className="font-bold" style={{fontSize:size*0.8}}>{e.text}</span>
-    </div>
-  </div>;
+  if(e.type==='callout')return <ProfessionalLabel element={e}
+    baseStyle={s} color={color} family={family} fontSize={size} progress={progress}/>;
   if (e.type==='icon') return <div className="pointer-events-none absolute vrm-glow" style={s}>
     <Icon size={Math.round(size*1.65)} strokeWidth={2.3}/>
   </div>;
