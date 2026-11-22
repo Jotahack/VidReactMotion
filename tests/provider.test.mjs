@@ -58,7 +58,7 @@ test('genera briefing, storyboard y planos independientes con progreso',async()=
 
 test('una generación de 60s produce referencia de 8 escenas, 32 grupos, 65 elementos y 96 keyframes',async()=>{
   const counts=[9,8,8,8,9,8,8,7];
-  const {provider,calls}=fakeProvider([brief,plan(8),...counts.map(shot)]);
+  const {provider,calls}=fakeProvider([brief,plan(8),...counts.map(count=>shot(count,4))]);
   const result=await provider.generateScene({model:'gpt-oss-20b',
     prompt:'Demo de 60 segundos',format:'landscape',duration:60});
   assert.equal(calls.length,10);
