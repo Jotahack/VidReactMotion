@@ -21,7 +21,7 @@ test('prompt de biotipos -> tarjeta, Montserrat y zona derecha sin cuatro grupos
   assert.equal(element.exit,'none');
   assert.equal(spec.scenes[0].groups[0].motion,'none');
   assert.equal(spec.scenes[0].groups[0].exit,'none');
-  assert.match(buildSimpleContentPrompt(intent,'landscape',7),/máximo 170/);
+  assert.match(buildSimpleContentPrompt(intent,'landscape',7),/máximo 165/);
 });
 
 test('una frase en dos columnas puede durar exactamente 2 segundos',()=>{
