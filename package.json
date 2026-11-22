@@ -15,7 +15,8 @@
     "render:type:smoke": "node scripts/person-type-render-smoke.mjs",
     "render:card:smoke": "node scripts/card-render-smoke.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "npm test && node --check server/index.mjs"
+    "check": "npm test && node --check server/index.mjs",
+    "render:director:smoke": "node scripts/director-gallery-smoke.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.539",
