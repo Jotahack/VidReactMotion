@@ -47,7 +47,9 @@ export function rankDesigns({intent,format='landscape',duration=7,prompt='',cont
   }).sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
 }
 function cleaned(value,max=360){
-  return String(value??'').replace(/\s+/g,' ').trim().slice(0,max);
+  const text=String(value??'').replace(/\s+/g,' ').trim();
+  if(text.length>max)throw new Error('Texto demasiado largo para la composición ('+text.length+' caracteres, máximo '+max+'). Acorta o divide el contenido.');
+  return text;
 }
 function region(format,placement){
   if(format==='portrait'){
