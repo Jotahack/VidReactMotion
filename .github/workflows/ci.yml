@@ -59,3 +59,13 @@ jobs:
             /tmp/vrm-legacy-longword-smoke.png
           if-no-files-found: ignore
           retention-days: 7
+      - name: Verify Montserrat card against transparent presenter layout
+        run: npm run render:card:smoke
+      - name: Save Montserrat card preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: montserrat-info-card
+          path: /tmp/vrm-biotipos-card.png
+          if-no-files-found: ignore
+          retention-days: 7
