@@ -81,6 +81,14 @@ export function composeFromCatalog({intent,content,format='landscape',duration=7
     const area=region(format,place);
     const heading=headline||'INFORMACIÓN';
     const body=description||items.join('. ');
+    // Base panel height on actual amount of content instead of filling the
+    // presenter's entire vertical side with an almost-empty container.
+    const wordCount=body.trim().split(/\s+/u).filter(Boolean).length;
+    const cardHeight=portrait?
+      Math.min(48,Math.max(27,26+Math.max(0,wordCount-14)*0.75)):
+      Math.min(60,Math.max(42,41+Math.max(0,wordCount-15)*1.0));
+    area.height=Number(cardHeight.toFixed(1));
+    area.y=Number(((100-cardHeight)/2).toFixed(1));
     if(!body)throw new Error('Falta el texto explicativo.');
     const start=Math.min(0.22,duration*0.09);
     const isQuote=chosen.mode==='quote';
