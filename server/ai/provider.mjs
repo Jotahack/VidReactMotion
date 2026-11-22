@@ -1,5 +1,5 @@
 import {creativeBriefSchema,buildCreativeBriefPrompt,validateCreativeBrief} from './prompt.mjs';
-import {storyboardPlanSchema,shotJsonSchema,targetShotCount,targetElementCount,
+import {storyboardPlanSchema,shotJsonSchema,targetShotCount,targetGroupCount,targetElementCount,
   normalizeStoryboardPlan,assembleStoryboard,buildStoryboardPlanPrompt,buildShotPrompt} from './storyboard.mjs';
 import {normalizeSpec} from '../../src/shared/spec.js';
 import {arrangeCinematicShot} from './layout.mjs';
@@ -71,6 +71,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
       }
       const count=targetShotCount(duration);
       const steps=count+2;
+      const groupCount=targetGroupCount(count);
       const notify=(stage,completed,detail)=>onProgress({stage,completed,total:steps,detail});
       notify('brief',0,'Desarrollando dirección creativa');
       const brief=validateCreativeBrief(await completeJson({
@@ -94,21 +95,21 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
         let shot;
         for(let attempt=0;attempt<2;attempt++){
           const generated=await completeJson({
-            model,system:buildShotPrompt({planned,count,index,format,elementCount:target}),
+            model,system:buildShotPrompt({planned,count,index,format,elementCount:target,groupCount}),
             user:JSON.stringify({originalRequest:prompt,brief,globalPlan:plan.shots.map(s=>({title:s.title,intent:s.intent})),
-              shot:planned,expectedGroups:4,expectedElements:target,
-              ...(attempt?{correction:'Necesitas CUATRO grupos completos con elementos válidos y tiempos dentro del plano.'}:{})}),
+              shot:planned,expectedGroups:groupCount,expectedElements:target,
+              ...(attempt?{correction:'Necesitas '+groupCount+' grupos con elementos válidos y tiempos dentro del plano.'}:{})}),
             schema:shotJsonSchema,name:'motion_shot',
             temperature:attempt?0.2:0.38,maxTokens:4400,signal
           });
-          if(Array.isArray(generated?.groups)&&generated.groups.length===4&&
+          if(Array.isArray(generated?.groups)&&generated.groups.length===groupCount&&
               generated.groups.every(g=>Array.isArray(g.elements)&&g.elements.length>0)&&
               generated.groups.reduce((n,g)=>n+g.elements.length,0)>=target){
             shot=generated;
             break;
           }
         }
-        if(!shot)throw new Error('El modelo no pudo construir cuatro grupos en el plano '+(index+1)+'.');
+        if(!shot)throw new Error('El modelo no pudo construir '+groupCount+' grupos en el plano '+(index+1)+'.');
         shots.push(arrangeCinematicShot(shot,format,intent));
         notify('shot',index+3,'Plano '+(index+1)+'/'+count+' terminado');
       }
