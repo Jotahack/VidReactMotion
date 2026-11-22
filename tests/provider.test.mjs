@@ -80,3 +80,33 @@ test('un plano insuficiente se reintenta y falla sin esconder elementos faltante
     /cuatro grupos en el plano 1/);
   assert.equal(calls.length,4);
 });
+
+
+test('GPT-OSS genera una tarjeta sencilla con una sola llamada, sin inventar cuatro grupos',async()=>{
+  const content={headline:'BIOTIPOS',description:'Clasificación según características físicas y biológicas.',items:[]};
+  const {provider,calls}=fakeProvider([content]);
+  const result=await provider.generateScene({model:'gpt-oss-20b',
+    prompt:'Explicación breve de biotipos en contenedor vertical a la derecha con Montserrat',
+    format:'landscape',duration:7});
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].body.response_format.json_schema.name,'simple_content');
+  assert.equal(result.metrics.groups,1);
+  assert.equal(result.metrics.elements,1);
+  const e=result.scene.scenes[0].groups[0].elements[0];
+  assert.equal(e.type,'infoCard');
+  assert.equal(e.heading,'BIOTIPOS');
+  assert.equal(e.font,'Montserrat');
+  assert.equal(e.x,55);
+});
+
+test('modo explícito de tipografía no genera planes innecesarios',async()=>{
+  const {provider,calls}=fakeProvider([{headline:'',description:'',
+    items:['UN CUERPO','EN EQUILIBRIO','NO ENCUENTRA','ENFERMEDAD']}]);
+  const result=await provider.generateScene({model:'gpt-oss-20b',
+    prompt:'Pon estas cuatro frases alrededor de una persona',mode:'typography',
+    placement:'around-person',font:'Montserrat',format:'landscape',duration:2});
+  assert.equal(calls.length,1);
+  assert.equal(result.scene.duration,2);
+  assert.equal(result.scene.scenes[0].groups.length,4);
+  assert.equal(result.scene.scenes[0].groups.at(-1).elements[0].text,'ENFERMEDAD');
+});
