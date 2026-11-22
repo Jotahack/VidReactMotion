@@ -6,7 +6,11 @@ import {
 } from 'lucide-react';
 import {COLORS} from '../shared/spec.js';
 import {presetTransform} from '../shared/motion.js';
-import {fitTextSize} from '../shared/text-layout.js';
+import {fitTextSize,fitParagraphSize} from '../shared/text-layout.js';
+import '@fontsource/montserrat/400.css';
+import '@fontsource/montserrat/600.css';
+import '@fontsource/montserrat/700.css';
+import '@fontsource/montserrat/800.css';
 import '../styles/tailwind.css';
 import './overlay.css';
 
@@ -87,7 +91,7 @@ function TextWithoutBrokenWords({text}) {
 
 function Element({element:e}) {
   const frame=useCurrentFrame();
-  const {fps,width:canvasWidth}=useVideoConfig();
+  const {fps,width:canvasWidth,height:canvasHeight}=useVideoConfig();
   const now=frame/fps;
   const end=e.at+e.hold;
   if (now<e.at||now>=end) return null;
@@ -95,26 +99,54 @@ function Element({element:e}) {
   // Every visible motion value is derived from the video frame, not the browser clock.
   const elapsed=Math.max(0,frame-Math.round(e.at*fps));
   const entranceFrames=Math.max(6,Math.round(fps*0.48));
-  const progress=interpolate(elapsed,[0,entranceFrames],[0,1],clamp);
+  const progress=e.animation==='none'?1:interpolate(elapsed,[0,entranceFrames],[0,1],clamp);
   const springProgress=spring({frame:elapsed,fps,config:{damping:14,stiffness:155,mass:0.9}});
   const exitStart=Math.max(e.at+0.2,end-0.33);
-  const exit=interpolate(now,[exitStart,end],[1,0],clamp);
+  const exit=e.exit==='none'?1:interpolate(now,[exitStart,end],[1,0],clamp);
   const opacity=Math.min(progress,exit);
   const color=COLORS[e.color]||COLORS.white;
   const Icon=ICONS[e.icon]||Globe2;
   const requestedSize=Math.round(e.size*(canvasWidth<1500?0.95:1));
   const isText=['title','subtitle','kinetic','quote','callout','pill','tag'].includes(e.type);
+  const family=e.font==='Montserrat'?"'Montserrat',Arial,sans-serif":e.font==='Arial'?'Arial,sans-serif':'Inter,Arial,sans-serif';
   const size=isText?fitTextSize({text:e.text,size:requestedSize,width:e.width,canvasWidth,
-    fontWeight:e.type==='subtitle'?600:900}):requestedSize;
+    fontFamily:family,fontWeight:e.type==='subtitle'?600:900,
+    singleLine:e.lineMode==='single',paddingPx:e.type==='callout'?58:0}):requestedSize;
   const s={
     position:'absolute',left:`${e.x}%`,top:`${e.y}%`,width:`${e.width}%`,
-    color,fontFamily:'Inter,Arial,sans-serif',fontSize:size,
+    color,fontFamily:family,fontSize:size,
     lineHeight:1.12,opacity,
     // Never split words into 'EQUILIBRI' + 'O'. Newlines are explicit layout cues.
-    wordBreak:'normal',overflowWrap:'normal',hyphens:'none',whiteSpace:'pre-line',
+    wordBreak:'normal',overflowWrap:'normal',hyphens:'none',
+    whiteSpace:e.lineMode==='single'?'nowrap':'pre-line',
     ...presetTransform(e.animation,progress,springProgress)
   };
 
+  if(e.type==='infoCard') {
+    const widthPx=canvasWidth*e.width/100, heightPx=canvasHeight*e.height/100;
+    const padding=canvasWidth<1300?38:52;
+    const heading=String(e.heading||'INFORMACIÓN');
+    const headingSize=fitTextSize({text:heading,size:Math.min(76,size),
+      width:e.width,canvasWidth,fontFamily:family,fontWeight:800,
+      singleLine:true,paddingPx:padding*2});
+    const bodySize=fitParagraphSize({
+      text:e.text,widthPx:widthPx-padding*2,
+      heightPx:heightPx-padding*2-headingSize*1.5,
+      requested:canvasWidth<1300?32:40,min:23
+    });
+    return <div className="pointer-events-none absolute vrm-info-card"
+      style={{...s,height:e.height+'%',padding,display:'flex',flexDirection:'column',
+        justifyContent:'center',gap:Math.max(20,headingSize*0.42),
+        borderRadius:30,overflow:'hidden',boxSizing:'border-box'}}>
+      <div className="font-extrabold tracking-tight" style={{
+        fontSize:headingSize,lineHeight:1.12,whiteSpace:'nowrap'}}>{heading}</div>
+      <div aria-hidden="true" style={{height:4,width:'24%',backgroundColor:color,opacity:0.9}}/>
+      <div className="font-normal" style={{fontSize:bodySize,lineHeight:1.4,
+        whiteSpace:'normal',overflowWrap:'normal',hyphens:'none'}}>
+        <TextWithoutBrokenWords text={e.text}/>
+      </div>
+    </div>;
+  }
   if(e.type==='pulse') {
     const box=Math.max(140,Math.min(340,size*3.4));
     const phase=(elapsed/(fps*2))%1;
