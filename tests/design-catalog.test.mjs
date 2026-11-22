@@ -103,3 +103,12 @@ test('tarjetas breves ajustan su altura al contenido y se centran en vertical',(
     assert.ok(a.y+a.height<88&&a.y>10);
   }
 });
+
+
+test('nunca recorta silenciosamente una explicación larga a mitad de palabra',()=>{
+  const intent={mode:'card',placement:'right',font:'Montserrat'};
+  const message='Esta explicación debe conservarse íntegra y no cortarse al llegar al final de la caja. '.repeat(5);
+  assert.throws(()=>composeFromCatalog({intent,content:{
+    headline:'LOS HUMORES',description:message,items:[]},duration:7,designId:'definition-editorial'
+  }),/Texto demasiado largo/);
+});
