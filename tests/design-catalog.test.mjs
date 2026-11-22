@@ -85,3 +85,21 @@ test('el ranking explica al usuario la preferencia y deja alternativas',()=>{
   assert.ok(result.selection.alternatives.length>=2);
   assert.ok(typeof result.selection.qualityScore==='number');
 });
+
+test('tarjetas breves ajustan su altura al contenido y se centran en vertical',()=>{
+  const intent={mode:'card',placement:'right',font:'Montserrat'};
+  for(const format of ['landscape','portrait']){
+    const short=composeFromCatalog({intent,format,duration:7,
+      content:{headline:'BIOTIPOS',description:'Clasificación de características físicas comunes.',items:[]},
+      designId:'definition-editorial'});
+    const long=composeFromCatalog({intent,format,duration:7,
+      content:{headline:'BIOTIPOS',description:'Una clasificación histórica de características físicas y biológicas comunes que agrupaba a las personas en tipologías. Estas categorías no constituyen un diagnóstico médico actual.',items:[]},
+      designId:'definition-editorial'});
+    const a=normalizeSpec(short.spec).scenes[0].groups[0].elements[0];
+    const b=normalizeSpec(long.spec).scenes[0].groups[0].elements[0];
+    assert.ok(a.height<b.height,'La tarjeta de contenido breve no debe igualar la altura de una larga');
+    assert.ok(a.height<=45,'La definición breve no debe ocupar casi toda la pantalla');
+    assert.ok(Math.abs((a.y+a.height/2)-50)<0.2,'El panel debe quedar verticalmente centrado');
+    assert.ok(a.y+a.height<88&&a.y>10);
+  }
+});
