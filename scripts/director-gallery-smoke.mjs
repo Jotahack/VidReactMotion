@@ -72,3 +72,27 @@ for(let y=0;y<frame.height;y++)for(let x=0;x<frame.width;x++){
 if(active<600||clear<frame.width*frame.height*0.2)
   throw new Error('Transición nativa sin contenido visible o sin transparencia.');
 console.log('VISUAL OK native-transitions',{active,clear,transitionOutput});
+
+
+// Exact regression for the screenshot where an old normalizer erased
+// " bilis negra." (the final 13 characters of a 133-character paragraph).
+const humores=JSON.parse(await readFile(path.resolve('examples/humores-explanation.json'),'utf8'));
+const fullCopy=humores.scenes[0].groups[0].elements[0].text;
+const checked=normalizeSpec(humores);
+if(fullCopy.length!==133||checked.scenes[0].groups[0].elements[0].text!==fullCopy)
+  throw new Error('Regresión: explicación de humores truncada.');
+const humoresProps={spec:checked};
+const humoresComp=await selectComposition({serveUrl,id:'Overlay',inputProps:humoresProps});
+const humoresOutput=path.join(directory,'humores-explanation.png');
+await renderStill({serveUrl,composition:humoresComp,inputProps:humoresProps,frame:120,
+  imageFormat:'png',output:humoresOutput,scale:0.5});
+const humoresImage=PNG.sync.read(await readFile(humoresOutput));
+let ink=0,transparentHumores=0;
+for(let y=0;y<humoresImage.height;y++)for(let x=0;x<humoresImage.width;x++){
+  const alpha=humoresImage.data[(y*humoresImage.width+x)*4+3];
+  if(alpha===0)transparentHumores++;
+  if(x>humoresImage.width*.52&&alpha>80)ink++;
+}
+if(ink<3000||transparentHumores<humoresImage.width*humoresImage.height*.25)
+  throw new Error('El ejemplo de los humores no tiene tarjeta visible y alfa.');
+console.log('VISUAL OK humores-explanation',{ink,transparentHumores,humoresOutput});
