@@ -5,6 +5,7 @@ import {TimelineStage} from './remotion/TimelineStage.jsx';
 import {sampleSpec,normalizeSpec,analyzeSpec} from './shared/spec.js';
 import {createStressDemo} from './shared/stress-demo.js';
 import personCenteredTypography from '../examples/person-centered-typography.json';
+import biotiposInfoCard from '../examples/biotipos-info-card.json';
 import {readNdjsonResponse} from './shared/ndjson.js';
 import {coverageGaps} from './shared/motion.js';
 import './styles/tailwind.css';
@@ -24,6 +25,9 @@ function App() {
  const [file,setFile]=useState('');
  const [jsonDraft,setJsonDraft]=useState(JSON.stringify(sampleSpec,null,2));
  const [codec,setCodec]=useState('mov');
+ const [designMode,setDesignMode]=useState('auto');
+ const [placement,setPlacement]=useState('auto');
+ const [font,setFont]=useState('Montserrat');
  const generationAbort=useRef(null);
  const renderAbort=useRef(null);
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
@@ -58,7 +62,7 @@ function App() {
    try{
      const response=await fetch('/api/generate/stream',{
        method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
-       body:JSON.stringify({prompt,model,format,duration})
+       body:JSON.stringify({prompt,model,format,duration,mode:designMode,placement,font})
      });
      let finished=false;
      await readNdjsonResponse(response,event=>{
@@ -116,8 +120,34 @@ function App() {
            <option value="landscape">Horizontal 1920×1080</option><option value="portrait">Vertical 1080×1920</option>
          </select></div>
          <div><label>Duración</label><select value={duration} onChange={e=>setDuration(Number(e.target.value))}>
-           {[3,4,5,6,8,10,12,15,20,30,45,60].map(n=><option key={n} value={n}>{n} segundos</option>)}
+           {[1,2,3,4,5,6,8,10,12,15,20,30,45,60].map(n=><option key={n} value={n}>{n} segundos</option>)}
          </select></div>
+       </div>
+       <div className="smallgrid">
+         <div><label htmlFor="designMode">Tipo de creación</label>
+           <select id="designMode" value={designMode} onChange={e=>setDesignMode(e.target.value)}>
+             <option value="auto">Automático</option>
+             <option value="typography">Solo tipografía</option>
+             <option value="card">Tarjeta informativa</option>
+             <option value="list">Lista animada</option>
+             <option value="advanced">Motion graphics avanzado</option>
+           </select></div>
+         <div><label htmlFor="fontChoice">Tipografía</label>
+           <select id="fontChoice" value={font} onChange={e=>setFont(e.target.value)}>
+             <option value="Montserrat">Montserrat</option>
+             <option value="Inter">Inter</option>
+             <option value="Arial">Arial</option>
+           </select></div>
+       </div>
+       <div className="smallgrid">
+         <div><label htmlFor="safeArea">Zona para el contenido</label>
+           <select id="safeArea" value={placement} onChange={e=>setPlacement(e.target.value)}>
+             <option value="auto">Detectar del prompt</option>
+             <option value="left">Izquierda</option>
+             <option value="right">Derecha</option>
+             <option value="center">Centro</option>
+             <option value="around-person">Alrededor de una persona</option>
+           </select></div>
        </div>
        <div className="model"><label>Modelo · {provider}</label><div className="inline">
          <select value={model} onChange={e=>setModel(e.target.value)}><option value="">Sin modelo</option>
@@ -133,6 +163,10 @@ function App() {
          applySpec(personCenteredTypography);setBrief(null);
          setMessage('Plantilla de texto para persona centrada cargada: 9 segundos, dos columnas y palabras completas.');
        }}>Cargar plantilla · Texto a ambos lados de la persona</button>
+       <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
+         applySpec(biotiposInfoCard);setDesignMode('card');setPlacement('right');setFont('Montserrat');
+         setMessage('Tarjeta BIOTIPOS cargada: Montserrat, una escena, composición a la derecha.');
+       }}>Cargar plantilla · Tarjeta BIOTIPOS con Montserrat</button>
        <button className="secondary mt-3" disabled={Boolean(busy)} onClick={()=>{
          applySpec(createStressDemo(format));setBrief(null);setMessage('Prueba extrema 60 s ('+(format==='portrait'?'9:16':'16:9')+') cargada: 8 escenas, 32 grupos y 65 elementos, sin IA.');
        }}>Cargar prueba extrema · 60 segundos · formato elegido</button>
