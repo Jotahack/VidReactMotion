@@ -5,7 +5,7 @@ import {bundle} from '@remotion/bundler';
 import {renderStill,selectComposition} from '@remotion/renderer';
 import pngjs from 'pngjs';
 import {composeFromCatalog} from '../src/shared/design-catalog.js';
-import {normalizeSpec} from '../src/shared/spec.js';
+import {normalizeSpec,sampleSpec} from '../src/shared/spec.js';
 import {tailwindBundlerOverride} from '../server/render/tailwind-bundler.mjs';
 
 const {PNG}=pngjs;
@@ -56,3 +56,19 @@ for(const item of cases){
   if(item.name==='palabras-centradas'&&(left<500||right<500))throw new Error('Faltan titulares a un lado.');
   console.log('VISUAL OK',item.name,{visible,transparent,left,right,center,output});
 }
+
+const nativeProps={spec:normalizeSpec({...sampleSpec,transitionEngine:'remotion'})};
+const nativeComposition=await selectComposition({serveUrl,id:'Overlay',inputProps:nativeProps});
+const transitionOutput=path.join(directory,'native-transitions.png');
+await renderStill({serveUrl,composition:nativeComposition,inputProps:nativeProps,
+  frame:123,imageFormat:'png',output:transitionOutput,scale:0.5});
+const frame=PNG.sync.read(await readFile(transitionOutput));
+let active=0,clear=0;
+for(let y=0;y<frame.height;y++)for(let x=0;x<frame.width;x++){
+  const a=frame.data[(y*frame.width+x)*4+3];
+  if(a>30)active++;
+  if(a===0)clear++;
+}
+if(active<600||clear<frame.width*frame.height*0.2)
+  throw new Error('Transición nativa sin contenido visible o sin transparencia.');
+console.log('VISUAL OK native-transitions',{active,clear,transitionOutput});
