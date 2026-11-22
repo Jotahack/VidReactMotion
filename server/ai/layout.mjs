@@ -41,11 +41,12 @@ function position(format,group,index,type){
   return {x:slot[0],y:slot[1],width:slot[2]};
 }
 
-export function arrangeCinematicShot(shot,format){
+export function arrangeCinematicShot(shot,format,intent={}){
   if(!Array.isArray(shot?.groups))return shot;
   return {...shot,groups:shot.groups.map((group,g)=>({
     ...group,elements:(group.elements||[]).map((element,i)=>({
-      ...element,...position(format,g,i,element.type),size:textSize(element,format)
+      ...element,...position(format,g,i,element.type),size:textSize(element,format),
+      font:intent.font||element.font||'Inter'
     }))
   }))};
 }
