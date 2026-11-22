@@ -22,7 +22,7 @@ const groupSchema={type:'object',additionalProperties:false,properties:{
   elements:{type:'array',minItems:1,maxItems:3,items:elementSchema}
 },required:['motion','at','hold','elements']};
 export const shotJsonSchema={type:'object',additionalProperties:false,properties:{
-  groups:{type:'array',minItems:4,maxItems:4,items:groupSchema}
+  groups:{type:'array',minItems:1,maxItems:4,items:groupSchema}
 },required:['groups']};
 
 export function targetShotCount(duration){
@@ -33,6 +33,7 @@ export function targetShotCount(duration){
   if(duration<=44)return 6;
   return 8;
 }
+export function targetGroupCount(shotCount){return shotCount>=6?4:shotCount>=3?3:2;}
 export function targetElementCount(index,count){
   if(count===8)return [9,8,8,8,9,8,8,7][index]??8;
   if(count===6)return 7;
@@ -107,12 +108,13 @@ export function buildStoryboardPlanPrompt({format,duration,count}){
     'El resultado es transparente, sin fondo, imágenes externas ni audio. Entrega SOLO JSON.';
 }
 
-export function buildShotPrompt({planned,count,index,format,elementCount}){
+export function buildShotPrompt({planned,count,index,format,elementCount,groupCount=4}){
+  const parts=Array.from({length:groupCount},(_,i)=>Math.floor(elementCount/groupCount)+(i<elementCount%groupCount?1:0));
   return 'Eres animador senior de Remotion. Diseña SOLO el plano '+(index+1)+' de '+count+' de un storyboard '+
     (format==='portrait'?'VERTICAL 9:16':'HORIZONTAL 16:9')+'. Duración local '+planned.hold+' segundos. '+
     'Devuelve SOLO un JSON con groups[] siguiendo shotJsonSchema; NO escribas at/hold de escena. '+
-    'Crea EXACTAMENTE 4 grupos, aproximadamente '+elementCount+' elementos en total ('+(elementCount===9?'3,2,2,2':elementCount===7?'2,2,2,1':elementCount===6?'2,2,1,1':elementCount===4?'1,1,1,1':'2,2,2,2')+'). '+
-    'Distribuye 4 grupos por regiones visuales distintas: encabezado, gráfico, dato y acento/cierre. '+
+    'Crea EXACTAMENTE '+groupCount+' grupos, '+elementCount+' elementos en total ('+parts.join(',')+'). '+
+    'Usa las regiones visuales necesarias: jerarquía de título, contenido y acento. No añadas gráficos si el mensaje no los necesita. '+
     'No coloques todos los elementos en el centro ni superpongas bloques grandes. '+
     'Cada grupo exige motion,at,hold,elements. Empieza el primer grupo en at=0; escalona los demás entre 0.15 y 1.3 s. '+
     'Todos los hold deben terminar antes del final de este plano; mantén una capa visible hasta el final. '+
