@@ -10,7 +10,7 @@ export function createApiRouter({config,ai,renderer}) {
   });
 
   function generationArgs(req){
-    const {model,prompt,format,duration,mode,placement,font}=req.body||{};
+    const {model,prompt,format,duration,mode,placement,font,designTemplate}=req.body||{};
     const chosen=config.model||model;
     if(typeof chosen!=='string'||!chosen.trim()||chosen.length>200||
        typeof prompt!=='string'||!prompt.trim()||prompt.length>2500){
@@ -20,11 +20,12 @@ export function createApiRouter({config,ai,renderer}) {
     // Use the exact same bounds and format as export and preview.
     const options=normalizeSpec({elements:[{type:'title',text:'test'}]},{format,duration});
     return {model:chosen,prompt:prompt.trim(),format:options.format,duration:options.duration,
-      mode,placement,font};
+      mode,placement,font,designTemplate};
   }
   function resultPayload(result,options){
     return {spec:normalizeSpec(result.scene,{format:options.format,duration:options.duration}),
-      brief:result.brief,plan:result.plan,metrics:result.metrics};
+      brief:result.brief,plan:result.plan,metrics:result.metrics,
+      selection:result.selection||null,content:result.content||null};
   }
   router.post('/generate',async (req,res)=>{
     try{
