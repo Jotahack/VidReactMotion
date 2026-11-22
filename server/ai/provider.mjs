@@ -48,6 +48,10 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
 
     async generateScene({model,prompt,format,duration,mode='auto',placement='auto',font='auto',designTemplate='auto',onProgress=()=>{},signal}) {
       const intent=resolveDesignIntent({prompt,mode,placement,font});
+      // Long editorial videos usually need scene planning rather than a 60-second
+      // definition card. Respect an explicit mode or a request for one static card.
+      const singleCard=/una sola (tarjeta|ficha|cartela)|tarjeta unica|texto fijo/i.test(prompt);
+      if(mode==='auto'&&duration>=20&&!singleCard)intent.mode='advanced';
       if(intent.mode!=='advanced'){
         onProgress({stage:'composition',completed:0,total:1,
           detail:'Creando '+({card:'tarjeta',typography:'tipografía',list:'lista'}[intent.mode]||'composición')+' legible'});
