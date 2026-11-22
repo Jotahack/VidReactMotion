@@ -11,8 +11,8 @@ function plan(count){return {shots:Array.from({length:count},(_,i)=>({
   preset:'hero',transition:'fade'
 }))};}
 
-function shot(target){
-  const distribution=target===9?[3,2,2,2]:target===7?[2,2,2,1]:target===6?[2,2,1,1]:target===4?[1,1,1,1]:[2,2,2,2];
+function shot(target,groups=4){
+  const distribution=Array.from({length:groups},(_,i)=>Math.floor(target/groups)+(i<target%groups?1:0));
   return {groups:distribution.map((count,group)=>({
     motion:['spring','left','right','blur'][group],at:group*0.2,hold:7.5-group*0.2,
     elements:Array.from({length:count},(_,i)=>({
@@ -36,7 +36,7 @@ function fakeProvider(responses){
 }
 
 test('genera briefing, storyboard y planos independientes con progreso',async()=>{
-  const {provider,calls}=fakeProvider([brief,plan(2),shot(4),shot(4)]);
+  const {provider,calls}=fakeProvider([brief,plan(2),shot(4,2),shot(4,2)]);
   const progress=[];
   const result=await provider.generateScene({
     model:'gpt-oss-20b',prompt:'Un titular de demo',format:'landscape',duration:6,
@@ -48,9 +48,9 @@ test('genera briefing, storyboard y planos independientes con progreso',async()=
   assert.equal(calls[0].options.headers.Authorization,'Bearer private');
   assert.equal(calls[0].body.messages[1].content,'Un titular de demo');
   assert.equal(result.scene.scenes.length,2);
-  assert.equal(result.metrics.groups,8);
+  assert.equal(result.metrics.groups,4);
   assert.equal(result.metrics.elements,8);
-  assert.equal(result.metrics.keyframes,24);
+  assert.equal(result.metrics.keyframes,12);
   assert.equal(progress[0].stage,'brief');
   assert.equal(progress.at(-1).stage,'complete');
   assert.equal(progress.at(-1).completed,4);
@@ -77,7 +77,7 @@ test('un plano insuficiente se reintenta y falla sin esconder elementos faltante
   const incomplete={groups:[{motion:'fade',at:0,hold:6,elements:[{type:'title',text:'TEST'}]}]};
   const {provider,calls}=fakeProvider([brief,plan(2),incomplete,incomplete]);
   await assert.rejects(provider.generateScene({model:'test',prompt:'Hola',format:'portrait',duration:6}),
-    /cuatro grupos en el plano 1/);
+    /2 grupos en el plano 1/);
   assert.equal(calls.length,4);
 });
 
