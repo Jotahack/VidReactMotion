@@ -1,0 +1,41 @@
+{
+  "format": "landscape",
+  "duration": 7,
+  "scenes": [
+    {
+      "at": 0,
+      "hold": 7,
+      "transition": "cut",
+      "preset": "minimal",
+      "groups": [
+        {
+          "at": 0.18,
+          "hold": 6.82,
+          "motion": "none",
+          "exit": "none",
+          "elements": [
+            {
+              "type": "infoCard",
+              "heading": "BIOTIPOS",
+              "text": "Un biotipo es una clasificación que agrupa características físicas y biológicas comunes. Existen distintos modelos de clasificación.",
+              "icon": "globe",
+              "value": 0,
+              "x": 55,
+              "y": 20,
+              "width": 38,
+              "height": 61,
+              "size": 75,
+              "color": "white",
+              "font": "Montserrat",
+              "lineMode": "wrap",
+              "animation": "fade",
+              "exit": "none",
+              "at": 0,
+              "hold": 6.82
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
