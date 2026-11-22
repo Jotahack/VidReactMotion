@@ -54,6 +54,8 @@ function normalizeKeyframes(points,maxTime) {
 
 function normalizeElement(e,maxTime,format) {
   if(!e||typeof e!=='object') return null;
+  const text=String(e.text??'');
+  if(text.length>2000)throw new Error('Texto demasiado largo (máximo 2000 caracteres por elemento).');
   const at=limit(e.at,0,Math.max(0,maxTime-0.15),0);
   const hold=limit(e.hold,0.15,Math.max(0.15,maxTime-at),Math.max(0.15,maxTime-at));
   const x=limit(e.x,0,90,10);
@@ -61,7 +63,7 @@ function normalizeElement(e,maxTime,format) {
   const maxSize=format==='portrait'?104:118;
   const y=limit(e.y,0,90,30);
   return {
-    type:choose(e.type,VALID_TYPES,'subtitle'),text:String(e.text??'').slice(0,120),
+    type:choose(e.type,VALID_TYPES,'subtitle'),text,
     value:limit(e.value,0,999999,0),icon:choose(e.icon,VALID_ICONS,'globe'),
     x,y,width,size:limit(e.size,18,maxSize,52),
     height:limit(e.height,8,100-y,e.type==='infoCard'?52:12),
