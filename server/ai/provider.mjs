@@ -3,7 +3,8 @@ import {storyboardPlanSchema,shotJsonSchema,targetShotCount,targetGroupCount,tar
   normalizeStoryboardPlan,assembleStoryboard,buildStoryboardPlanPrompt,buildShotPrompt} from './storyboard.mjs';
 import {normalizeSpec} from '../../src/shared/spec.js';
 import {arrangeCinematicShot} from './layout.mjs';
-import {resolveDesignIntent,buildSimpleStoryboard,simpleContentSchema,buildSimpleContentPrompt} from './creative-router.mjs';
+import {resolveDesignIntent,simpleContentSchema,buildSimpleContentPrompt} from './creative-router.mjs';
+import {chooseReviewedComposition} from './director.mjs';
 
 export function createOpenAiCompatibleProvider(config,request=fetch) {
   const headers={'Content-Type':'application/json'};
@@ -45,7 +46,7 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
       return (Array.isArray(body.data)?body.data:[]).map(m=>m?.id).filter(x=>typeof x==='string');
     },
 
-    async generateScene({model,prompt,format,duration,mode='auto',placement='auto',font='auto',onProgress=()=>{},signal}) {
+    async generateScene({model,prompt,format,duration,mode='auto',placement='auto',font='auto',designTemplate='auto',onProgress=()=>{},signal}) {
       const intent=resolveDesignIntent({prompt,mode,placement,font});
       if(intent.mode!=='advanced'){
         onProgress({stage:'composition',completed:0,total:1,
@@ -55,7 +56,8 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
           schema:simpleContentSchema,name:'simple_content',
           temperature:0.22,maxTokens:1100,signal
         });
-        const scene=normalizeSpec(buildSimpleStoryboard({intent,content,format,duration}),{format,duration});
+        const reviewed=chooseReviewedComposition({intent,content,prompt,format,duration,designTemplate});
+        const scene=reviewed.scene;
         const groups=scene.scenes.reduce((n,s)=>n+s.groups.length,0);
         const elements=scene.scenes.reduce((n,s)=>n+s.groups.reduce((a,g)=>a+g.elements.length,0),0);
         const brief={
@@ -67,7 +69,9 @@ export function createOpenAiCompatibleProvider(config,request=fetch) {
           assets:'Componentes tipográficos y tarjetas locales'
         };
         onProgress({stage:'complete',completed:1,total:1,detail:'Composición validada'});
-        return {brief,plan:{intent},scene,metrics:{shots:1,groups,elements,keyframes:0}};
+        return {brief,plan:{intent,design:reviewed.selection},scene,
+          content,selection:reviewed.selection,
+          metrics:{shots:1,groups,elements,keyframes:0}};
       }
       const count=targetShotCount(duration);
       const steps=count+2;
