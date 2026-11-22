@@ -1,7 +1,8 @@
 export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout','pulse','beam','ticker','infoCard'];
 export const VALID_COLORS=['white','lime','red','cyan','yellow','gray','orange','violet','pink'];
 export const VALID_ANIMATIONS=['up','left','pop','fade','right','down','zoom','rotate','blur','wipe','spring','none'];
-export const VALID_FONTS=['Inter','Montserrat','Arial'];
+export const VALID_FONTS=['Inter','Montserrat','Arial','Oswald','Playfair Display'];
+export const VALID_VARIANTS=['editorial','glass','outline','minimal','ribbon','indexed','sides','stack','keyword','quote','compare','timeline'];
 export const VALID_ICONS=['globe','chart','trend','alert','flag','bolt','shield','users','cpu','landmark','factory','satellite','rocket','network','pin','building','coins','news'];
 export const VALID_TRANSITIONS=['fade','slide','zoom','cut'];
 export const VALID_PRESETS=['hero','data','comparison','quote','lower-third','minimal'];
@@ -69,6 +70,7 @@ function normalizeElement(e,maxTime,format) {
     height:limit(e.height,8,100-y,e.type==='infoCard'?52:12),
     heading:String(e.heading??'').slice(0,120),
     font:choose(e.font,VALID_FONTS,'Inter'),
+    variant:choose(e.variant,VALID_VARIANTS,'glass'),
     lineMode:choose(e.lineMode,['wrap','single'],'wrap'),
     exit:choose(e.exit,['none','fade'],'fade'),
     color:choose(e.color,VALID_COLORS,'white'),
@@ -144,7 +146,8 @@ export function normalizeSpec(raw,forced={}) {
   if(!scenes.length)throw new Error('No hay elementos para animar.');
   // Extend the final scene even if malformed groups were discarded.
   const last=scenes.at(-1);last.hold=Number((duration-last.at).toFixed(3));
-  return {format,duration,scenes};
+  return {format,duration,scenes,
+    ...(raw.transitionEngine==='remotion'?{transitionEngine:'remotion'}:{})};
 }
 
 export function analyzeSpec(raw) {

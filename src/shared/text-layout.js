@@ -1,3 +1,4 @@
+import {fitText} from '@remotion/layout-utils';
 // Pure safe fallback plus optional browser-side measurement of the exact
 // installed font. Never split an unbreakable word to solve a layout overflow.
 const cache=new Map();
@@ -39,6 +40,14 @@ export function fitTextSize({text,size,width,canvasWidth,
   // 8% reserved for text shadow, letter spacing and Chromium font metrics.
   const availablePx=Math.max(24,(canvasWidth*Math.max(0,Number(width)||0)/100-paddingPx)*0.90);
   const maxSize=availablePx/Math.max(0.1,longest);
+  if(typeof document!=='undefined'&&singleLine){
+    try {
+      const measured=fitText({text:words.join(' '),withinWidth:availablePx,
+        fontFamily,fontWeight});
+      if(Number.isFinite(measured.fontSize)&&measured.fontSize>0)
+        return Math.round(Math.min(requested,maxSize,measured.fontSize*0.97)*10)/10;
+    }catch { /* Browser font not ready: keep deterministic conservative fit. */ }
+  }
   return Math.round(Math.min(requested,maxSize)*10)/10;
 }
 

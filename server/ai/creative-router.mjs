@@ -1,27 +1,33 @@
 // Deterministic intent routing. This removes the old rule that every request,
 // even a single phrase, must produce four animated groups per shot.
-export const MODES=['auto','typography','card','list','advanced'];
+import {DESIGN_IDS,candidatesForMode} from '../../src/shared/design-catalog.js';
+export const MODES=['auto','typography','card','list','quote','comparison','timeline','advanced'];
 export const PLACEMENTS=['auto','left','right','center','around-person'];
-export const FONTS=['Montserrat','Inter','Arial'];
+export const FONTS=['Montserrat','Inter','Arial','Oswald','Playfair Display'];
 
 export function resolveDesignIntent({prompt='',mode='auto',placement='auto',font='auto'}={}){
   const p=String(prompt);
-  const chosenMode=MODES.includes(mode)?mode:'auto';
-  const inferredMode=/\b(contenedor|tarjeta|ficha|definici[oó]n|qu[eé] es|explicaci[oó]n breve|recuadro)\b/i.test(p)?
-    'card':/\b(lista|enumera|enumeraci[oó]n|cuatro humores|bilis amarilla|bilis negra)\b/i.test(p)?
-    'list':/\b(frase|palabras|solo texto|tipograf[ií]a|un cuerpo en equilibrio|en una l[ií]nea)\b/i.test(p)?
-    'typography':'advanced';
-  const resolvedMode=chosenMode==='auto'?inferredMode:chosenMode;
+  const plain=p.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const explicit=MODES.includes(mode)?mode:'auto';
+  const inferred=
+    /(comparativa|compara|frente a|vs[.\s]|diferencias entre)/.test(plain)?'comparison':
+    /(cronologia|linea de tiempo|paso a paso|etapas|timeline)/.test(plain)?'timeline':
+    /(cita|reflexion|frase celebre|entre comillas)/.test(plain)?'quote':
+    /(contenedor|tarjeta|ficha|definicion|que es|explicacion breve|recuadro|biotipos)/.test(plain)?'card':
+    /(lista|enumera|enumeracion|cuatro humores|bilis amarilla|bilis negra|flema y sangre)/.test(plain)?'list':
+    /(frase|palabras|solo texto|tipografia|una linea|en equilibrio)/.test(plain)?'typography':
+    'advanced';
+  const resolvedMode=explicit==='auto'?inferred:explicit;
   const requestedPlacement=PLACEMENTS.includes(placement)?placement:'auto';
-  let position=requestedPlacement;
-  if(position==='auto'){
-    position=/\b(a la derecha|lado derecho|parte derecha)\b/i.test(p)?'right':
-      /\b(a la izquierda|lado izquierdo|parte izquierda)\b/i.test(p)?'left':
-      /\b(persona|silueta|alrededor de)\b/i.test(p)?'around-person':'center';
-  }
-  let family=FONTS.includes(font)?font:
-    /montserrat/i.test(p)?'Montserrat':/arial/i.test(p)?'Arial':'Inter';
-  if(!FONTS.includes(family))family='Inter';
+  const position=requestedPlacement!=='auto'?requestedPlacement:
+    /(a la derecha|lado derecho|parte derecha)/.test(plain)?'right':
+    /(a la izquierda|lado izquierdo|parte izquierda)/.test(plain)?'left':
+    /(persona|silueta|alrededor de|centro libre)/.test(plain)?'around-person':'center';
+  const family=FONTS.includes(font)?font:
+    /montserrat/.test(plain)?'Montserrat':
+    /playfair/.test(plain)?'Playfair Display':
+    /oswald/.test(plain)?'Oswald':
+    /arial/.test(plain)?'Arial':'Inter';
   return {mode:resolvedMode,placement:position,font:family};
 }
 
@@ -95,20 +101,26 @@ export const simpleContentSchema={
   properties:{
     headline:{type:'string'},
     description:{type:'string'},
-    items:{type:'array',minItems:0,maxItems:6,items:{type:'string'}}
+    items:{type:'array',minItems:0,maxItems:6,items:{type:'string'}},
+    templateId:{type:'string',enum:DESIGN_IDS},
+    designReason:{type:'string'}
   },
-  required:['headline','description','items']
+  required:['headline','description','items','templateId','designReason']
 };
 
 export function buildSimpleContentPrompt(intent,format,duration){
-  return 'Eres editor de texto para overlays profesionales. Responde SOLO JSON con headline,description,items. '+
-    'Modo '+intent.mode+'. Formato '+format+'. Duración '+duration+' segundos. '+
-    (intent.mode==='card'?
-      'Un titular breve y una definición o explicación breve, clara y rigurosa (máximo 170 caracteres). items siempre []. ':
-      intent.mode==='list'?
-      'items es una lista exacta de los conceptos aportados por el usuario, en su mismo orden. No añadas conceptos. headline y description opcionales pero de tipo string. ':
-      'items contiene las frases o segmentos que deben mostrarse sucesivamente, hasta cuatro, sin alterar palabras ni inventar otras. No añadas conceptos. ')+
-    'Respeta el idioma y todas las palabras originales expresamente indicadas. '+
-    'No afirmes que una clasificación histórica sea un hecho científico vigente. '+
-    'No inventes cifras, estudios, hechos, propiedades ni personas. No devuelvas coordenadas ni animaciones.';
+  const options=candidatesForMode(intent.mode);
+  const descriptions=options.map(d=>d.id+' = '+d.summary).join('; ');
+  return 'Actúa como director de arte y editor para vídeos con fondo transparente. '+
+    'Elige SOLO UNO de los diseños permitidos y explica brevemente por qué es mejor. '+
+    'Responde JSON con headline, description, items, templateId y designReason. '+
+    'Diseños compatibles: '+descriptions+'. '+
+    'Modo '+intent.mode+'. Formato '+format+'. Duración '+duration+' s. '+
+    'Posición solicitada: '+intent.placement+'. Fuente: '+intent.font+'. '+
+    (intent.mode==='card'||intent.mode==='quote'?
+      'Redacta un título corto y una explicación completa pero breve (máximo 165 caracteres). items debe ser []. ':
+      'items contiene SOLO los conceptos o fragmentos que el usuario ha indicado, en orden, hasta seis. Sin añadir palabras ajenas. ')+
+    'Conserva los nombres, hechos y cifras exactos. No inventes datos, fuentes, citas ni valores. '+
+    'No generes coordenadas, código ni CSS: el motor elegirá composición, tamaños y ritmo. '+
+    'templateId DEBE ser uno de los diseños compatibles; designReason máximo 100 caracteres.';
 }

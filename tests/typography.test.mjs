@@ -34,3 +34,17 @@ test('the centered-person example stays clear of screen edges and keeps its text
   assert.ok(labels.filter(e=>e.x===59).every(e=>e.x>=59));
   assert.deepEqual(coverageGaps(spec),[]);
 });
+
+
+test('la explicación íntegra de los humores no se corta tras el carácter 120',async()=>{
+  const raw=JSON.parse(await readFile(new URL('../examples/humores-explanation.json',import.meta.url),'utf8'));
+  const source=raw.scenes[0].groups[0].elements[0].text;
+  assert.equal(source.length,133);
+  assert.equal(source.slice(120),' bilis negra.');
+  const normalized=normalizeSpec(raw);
+  const rendered=normalized.scenes[0].groups[0].elements[0];
+  assert.equal(rendered.text,source);
+  assert.ok(rendered.text.endsWith('bilis negra.'));
+  assert.equal(rendered.type,'infoCard');
+  assert.equal(rendered.heading,'LOS HUMORES');
+});

@@ -9,6 +9,7 @@ import biotiposInfoCard from '../examples/biotipos-info-card.json';
 import {readNdjsonResponse} from './shared/ndjson.js';
 import {coverageGaps} from './shared/motion.js';
 import {assessComposition} from './shared/quality.js';
+import {DESIGN_CATALOG,composeFromCatalog} from './shared/design-catalog.js';
 import './styles/tailwind.css';
 import './style.css';
 
@@ -29,6 +30,8 @@ function App() {
  const [designMode,setDesignMode]=useState('auto');
  const [placement,setPlacement]=useState('auto');
  const [font,setFont]=useState('Montserrat');
+ const [designTemplate,setDesignTemplate]=useState('auto');
+ const [designResult,setDesignResult]=useState(null);
  const generationAbort=useRef(null);
  const renderAbort=useRef(null);
  const [reference,setReference]=useState(null);
@@ -54,7 +57,7 @@ function App() {
    try {
      const data=await request('/api/models');
      setModels(data.models);
-     setProvider(data.provider==='compatible'?'API compatible':'LM Studio');
+     setProvider(data.provider==='gemini'?'Gemini':data.provider==='compatible'?'API compatible':'LM Studio');
      setModel(previous=>data.models.includes(previous)?previous:(data.models[0]||''));
      setMessage(data.models.length?'Proveedor conectado: selecciona un modelo.':'Sin modelos. Comprueba AI_MODEL o el servidor de LM Studio.');
    } catch(error){setMessage('Proveedor no disponible: '+error.message);}
@@ -72,13 +75,15 @@ function App() {
    try{
      const response=await fetch('/api/generate/stream',{
        method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,
-       body:JSON.stringify({prompt,model,format,duration,mode:designMode,placement,font})
+       body:JSON.stringify({prompt,model,format,duration,mode:designMode,placement,font,designTemplate})
      });
      let finished=false;
      await readNdjsonResponse(response,event=>{
        if(event.type==='progress')setMessage((event.detail||event.stage)+' ('+event.completed+'/'+event.total+')');
        if(event.type==='result'){
          applySpec(event.spec);setBrief(event.brief||null);finished=true;
+         setDesignResult(event.selection&&event.content?{selection:event.selection,content:event.content,
+           intent:event.plan?.intent||{mode:designMode,placement,font}}:null);
          const m=event.metrics;
          setMessage('Generado: '+(m?m.shots+' escenas · '+m.groups+' grupos · '+m.elements+' elementos · '+m.keyframes+' keyframes':'storyboard validado')+'.');
        }
@@ -140,6 +145,9 @@ function App() {
              <option value="typography">Solo tipografía</option>
              <option value="card">Tarjeta informativa</option>
              <option value="list">Lista animada</option>
+             <option value="quote">Cita editorial</option>
+             <option value="comparison">Comparativa</option>
+             <option value="timeline">Línea de tiempo</option>
              <option value="advanced">Motion graphics avanzado</option>
            </select></div>
          <div><label htmlFor="fontChoice">Tipografía</label>
@@ -147,6 +155,8 @@ function App() {
              <option value="Montserrat">Montserrat</option>
              <option value="Inter">Inter</option>
              <option value="Arial">Arial</option>
+             <option value="Oswald">Oswald</option>
+             <option value="Playfair Display">Playfair Display</option>
            </select></div>
        </div>
        <div className="smallgrid">
@@ -157,6 +167,13 @@ function App() {
              <option value="right">Derecha</option>
              <option value="center">Centro</option>
              <option value="around-person">Alrededor de una persona</option>
+           </select></div>
+       </div>
+       <div className="smallgrid">
+         <div><label htmlFor="designTemplate">Composición profesional</label>
+           <select id="designTemplate" value={designTemplate} onChange={e=>setDesignTemplate(e.target.value)}>
+             <option value="auto">Director creativo selecciona</option>
+             {DESIGN_CATALOG.map(d=><option key={d.id} value={d.id}>{d.name} · {d.mode}</option>)}
            </select></div>
        </div>
        <div className="model"><label>Modelo · {provider}</label><div className="inline">
@@ -187,6 +204,25 @@ function App() {
          catch(error){setMessage('Error al importar JSON: '+error.message);}
          event.target.value='';
        }}/>
+       {designResult&&<section className="creativeResults">
+         <strong>Composición elegida: {designResult.selection.name}</strong>
+         <p>{designResult.selection.reason}</p>
+         <small>Evaluación geométrica: {designResult.selection.qualityScore}/100.
+           {designResult.selection.warnings?.length?' Revisa las alertas de legibilidad.':' Sin alertas detectadas.'}</small>
+         <div className="designOptions">
+           {designResult.selection.alternatives?.map(a=><button key={a.id}
+             className="secondary" disabled={Boolean(busy)}
+             onClick={()=>{
+               const next=composeFromCatalog({intent:designResult.intent,
+                 content:designResult.content,prompt,format,duration,designId:a.id});
+               applySpec(next.spec);
+               setDesignResult(previous=>({...previous,selection:{...previous.selection,
+                 id:a.id,name:a.name,qualityScore:a.qualityScore,warnings:a.warnings,
+                 reason:'Variante seleccionada manualmente'}}));
+               setMessage('Variante '+a.name+' aplicada sin volver a llamar a la IA.');
+             }}>{a.name} · alternativa</button>)}
+         </div>
+       </section>}
        {brief&&<details className="brief">
          <summary>Briefing creativo utilizado</summary>
          <p><strong>Titular:</strong> {brief.headline}</p>

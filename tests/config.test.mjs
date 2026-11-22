@@ -7,3 +7,11 @@ test('API remota con credenciales válidas',()=>{
  const c=readConfig({AI_PROVIDER:'compatible',AI_BASE_URL:'https://api.example.com/v1',AI_API_KEY:'test'});
  assert.equal(c.apiKey,'test');assert.equal(c.baseUrl,'https://api.example.com/v1');
 });
+
+test('Gemini requiere clave y utiliza endpoint oficial compatible sin exponer credenciales',()=>{
+  assert.throws(()=>readConfig({AI_PROVIDER:'gemini'}),/AI_API_KEY/);
+  const c=readConfig({AI_PROVIDER:'gemini',AI_API_KEY:'secret',AI_MODEL:'gemini-test'});
+  assert.equal(c.provider,'gemini');
+  assert.equal(c.baseUrl,'https://generativelanguage.googleapis.com/v1beta/openai');
+  assert.equal(c.model,'gemini-test');
+});

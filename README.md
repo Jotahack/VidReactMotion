@@ -67,6 +67,20 @@ Selecciona **Horizontal 16:9** o **Vertical 9:16** y pulsa **«Cargar prueba ext
 
 En CI se ejecutan pruebas unitarias, compilación de Vite y Remotion, renders PNG con transparencia y una prueba corta de ProRes 4444 alfa. **La compatibilidad final con tu CapCut y el tiempo de render de 60s en Windows deben comprobarse en tu equipo.**
 
+## Director de composiciones V3 (PR #2 en revisión)
+
+Se ha iniciado una **PR de diseño y calidad** separada: [#2](https://github.com/Jotahack/VidReactMotion/pull/2), sobre la rama de la PR #1. **No fusionar sin revisión.**
+
+La IA ya no tiene que colocar todos los objetos libremente: propone título, texto, conceptos, una receta visual compatible y una justificación. El motor evalúa alternativas de un catálogo de **13 composiciones originales** y permite cambiar entre ellas sin repetir la llamada al modelo. Incluye fuentes Montserrat, Oswald y Playfair Display, cartelas profesionales, medición oficial con @remotion/layout-utils, SVG por @remotion/shapes y @remotion/paths y transiciones avanzadas con @remotion/transitions.
+
+Para preparar la comparación entre proveedores:
+- LM Studio: AI_PROVIDER=lmstudio, servidor local y GPT-OSS 20B.
+- Gemini: AI_PROVIDER=gemini, AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai, AI_API_KEY y AI_MODEL del proveedor. **Sin pruebas reales con Gemini todavía.**
+
+Pruebas adicionales: npm run render:director:smoke genera una galería de cinco PNG con alfa. [Auditoría y criterios de aceptación](docs/COMPOSITION_DIRECTOR_V3.md).
+
+RemotionUI, Remotion Scenes y las plantillas de React Video Editor son referencias de componentes MIT y no se han instalado en bloque en esta PR. Se pueden incorporar selectivamente cuando se haya verificado código, licencia y compatibilidad.
+
 ## Mejoras de calidad V2.1
 
 La app dispone ahora de **modos de composición**: automático, solo tipografía, tarjeta informativa, lista y motion graphics avanzado. En los modos sencillos GPT-OSS realiza una inferencia de contenido y el motor controla directamente posiciones, tipografía, tiempos y legibilidad; ya no fuerza cuatro grupos por plano.

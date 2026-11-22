@@ -2,6 +2,9 @@ import React from 'react';
 import {AbsoluteFill,interpolate,spring,useCurrentFrame,useVideoConfig} from 'remotion';
 import {Overlay} from './Overlay.jsx';
 import {keyframesToStyle,presetTransform} from '../shared/motion.js';
+import {TransitionSeries,linearTiming} from '@remotion/transitions';
+import {fade} from '@remotion/transitions/fade';
+import {slide} from '@remotion/transitions/slide';
 
 const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'};
 
@@ -50,11 +53,31 @@ function Shot({scene}) {
  * Canonical V2 storyboard renderer. A shot contains independent motion groups,
  * each with individual elements. All timing is based on useCurrentFrame().
  */
+function SceneTransitions({spec}) {
+  const {fps}=useVideoConfig();
+  const overlap=Math.min(10,Math.max(2,Math.round(fps*0.28)));
+  const children=spec.scenes.flatMap((scene,i)=>{
+    const frames=Math.max(1,Math.round(scene.hold*fps)+(i>0?overlap:0));
+    const part=<TransitionSeries.Sequence key={'shot-'+i} durationInFrames={frames}>
+      <Shot scene={{...scene,at:0,hold:frames/fps,transition:'cut'}}/>
+    </TransitionSeries.Sequence>;
+    if(i===0)return [part];
+    return [<TransitionSeries.Transition key={'transition-'+i}
+      presentation={scene.transition==='slide'?slide({direction:'from-right'}):fade()}
+      timing={linearTiming({durationInFrames:overlap})}/>,part];
+  });
+  return <AbsoluteFill style={{background:'transparent',overflow:'hidden'}}>
+    <TransitionSeries>{children}</TransitionSeries>
+  </AbsoluteFill>;
+}
+
 export function TimelineStage({spec}) {
   if(!Array.isArray(spec.scenes)){
     // A pre-migration scene can still be previewed without conversion.
     return <Overlay spec={spec}/>;
   }
+  if(spec.transitionEngine==='remotion'&&spec.scenes.length>1)
+    return <SceneTransitions spec={spec}/>;
   return <AbsoluteFill style={{backgroundColor:'transparent',overflow:'hidden',pointerEvents:'none'}}>
     {spec.scenes.map((scene,index)=><Shot key={index} scene={scene}/>)}
   </AbsoluteFill>;
