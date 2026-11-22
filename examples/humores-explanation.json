@@ -1,0 +1,40 @@
+{
+  "format": "landscape",
+  "duration": 7,
+  "scenes": [
+    {
+      "at": 0,
+      "hold": 7,
+      "transition": "cut",
+      "preset": "minimal",
+      "groups": [
+        {
+          "motion": "none",
+          "exit": "none",
+          "at": 0.2,
+          "hold": 6.8,
+          "elements": [
+            {
+              "type": "infoCard",
+              "heading": "LOS HUMORES",
+              "text": "La medicina hipocrática sostenía que la salud dependía del equilibrio de cuatro humores: sangre, flema, bilis amarilla y bilis negra.",
+              "x": 54,
+              "y": 25,
+              "width": 39,
+              "height": 50,
+              "size": 72,
+              "font": "Montserrat",
+              "variant": "editorial",
+              "lineMode": "wrap",
+              "color": "white",
+              "animation": "fade",
+              "exit": "none",
+              "at": 0,
+              "hold": 6.8
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
