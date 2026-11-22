@@ -1,6 +1,7 @@
-export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout','pulse','beam','ticker'];
+export const VALID_TYPES=['title','subtitle','tag','stat','bar','icon','divider','ring','quote','pill','kinetic','orbit','callout','pulse','beam','ticker','infoCard'];
 export const VALID_COLORS=['white','lime','red','cyan','yellow','gray','orange','violet','pink'];
-export const VALID_ANIMATIONS=['up','left','pop','fade','right','down','zoom','rotate','blur','wipe','spring'];
+export const VALID_ANIMATIONS=['up','left','pop','fade','right','down','zoom','rotate','blur','wipe','spring','none'];
+export const VALID_FONTS=['Inter','Montserrat','Arial'];
 export const VALID_ICONS=['globe','chart','trend','alert','flag','bolt','shield','users','cpu','landmark','factory','satellite','rocket','network','pin','building','coins','news'];
 export const VALID_TRANSITIONS=['fade','slide','zoom','cut'];
 export const VALID_PRESETS=['hero','data','comparison','quote','lower-third','minimal'];
@@ -58,10 +59,16 @@ function normalizeElement(e,maxTime,format) {
   const x=limit(e.x,0,90,10);
   const width=limit(e.width,8,100-x,65);
   const maxSize=format==='portrait'?104:118;
+  const y=limit(e.y,0,90,30);
   return {
     type:choose(e.type,VALID_TYPES,'subtitle'),text:String(e.text??'').slice(0,120),
     value:limit(e.value,0,999999,0),icon:choose(e.icon,VALID_ICONS,'globe'),
-    x,y:limit(e.y,0,90,30),width,size:limit(e.size,18,maxSize,52),
+    x,y,width,size:limit(e.size,18,maxSize,52),
+    height:limit(e.height,8,100-y,e.type==='infoCard'?52:12),
+    heading:String(e.heading??'').slice(0,120),
+    font:choose(e.font,VALID_FONTS,'Inter'),
+    lineMode:choose(e.lineMode,['wrap','single'],'wrap'),
+    exit:choose(e.exit,['none','fade'],'fade'),
     color:choose(e.color,VALID_COLORS,'white'),
     animation:choose(e.animation,VALID_ANIMATIONS,'up'),at,hold,
     ...(Array.isArray(e.keyframes)&&e.keyframes.length?{keyframes:normalizeKeyframes(e.keyframes,hold)}:{})
@@ -79,7 +86,8 @@ function normalizeGroup(group,maxTime,format) {
   const latest=elements.reduce((best,e)=>e.at+e.hold>best.at+best.hold?e:best,elements[0]);
   if(hold-(latest.at+latest.hold)>0.4)latest.hold=Number((hold-latest.at).toFixed(3));
   return {
-    at,hold,motion:choose(group.motion,VALID_ANIMATIONS,'fade'),elements,
+    at,hold,motion:choose(group.motion,VALID_ANIMATIONS,'fade'),
+    exit:choose(group.exit,['none','fade'],'fade'),elements,
     ...(Array.isArray(group.keyframes)&&group.keyframes.length?
       {keyframes:normalizeKeyframes(group.keyframes,hold)}:{})
   };
@@ -108,7 +116,7 @@ function normalizeScene(scene,at,hold,format) {
 export function normalizeSpec(raw,forced={}) {
   if(!raw||typeof raw!=='object')throw new Error('La IA no devolvió una escena válida.');
   const format=choose(forced.format??raw.format,['portrait','landscape'],'landscape');
-  const duration=limit(forced.duration??raw.duration,3,60,12);
+  const duration=limit(forced.duration??raw.duration,1,60,12);
   let candidates;
   if(Array.isArray(raw.scenes)&&raw.scenes.length) {
     candidates=raw.scenes.slice(0,8).filter(s=>s&&typeof s==='object');
@@ -148,7 +156,7 @@ export function analyzeSpec(raw) {
     const items=scene.groups.flatMap(g=>g.elements.map(e=>({
       type:e.type,text:e.text,
       start:g.at+e.at,end:g.at+e.at+e.hold,
-      x:e.x,y:e.y,width:e.width,height:Math.max(4,e.size/12)
+      x:e.x,y:e.y,width:e.width,height:e.type==='infoCard'?e.height:Math.max(4,e.size/12)
     })));
     for(let a=0;a<items.length;a++)for(let b=a+1;b<items.length;b++){
       const p=items[a],q=items[b];
