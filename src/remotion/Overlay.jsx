@@ -142,8 +142,9 @@ function Element({element:e}) {
         fontSize:headingSize,lineHeight:1.12,whiteSpace:'nowrap'}}>{heading}</div>
       <div aria-hidden="true" style={{height:4,width:'24%',backgroundColor:color,opacity:0.9}}/>
       <div className="font-normal" style={{fontSize:bodySize,lineHeight:1.4,
-        whiteSpace:'normal',overflowWrap:'normal',hyphens:'none'}}>
-        <TextWithoutBrokenWords text={e.text}/>
+        whiteSpace:'normal',wordBreak:'normal',overflowWrap:'break-word',
+        hyphens:'none',maxWidth:'100%',minWidth:0}}>
+        {e.text}
       </div>
     </div>;
   }
