@@ -19,16 +19,17 @@ export function chooseReviewedComposition({intent,content,prompt='',format='land
     const warnings=assessComposition(scene,{
       reserveCenter:intent.placement==='around-person'
     });
-    const rating=candidate.score-cost(warnings);
+    const hasCritical=warnings.some(w=>['person-zone','safe-area','overlap','small-text'].includes(w.code));
+    const rating=candidate.score-cost(warnings)-(hasCritical?240:0);
     return {id:candidate.id,name:candidate.name,scene,warnings,rating,score:candidate.score};
   });
   assessed.sort((a,b)=>b.rating-a.rating);
   const picked=assessed[0];
   const selection={id:picked.id,name:picked.name,reason:content?.designReason||'Composición validada por reglas',
-    qualityScore:Math.max(0,Math.min(100,Math.round(picked.rating))),
+    qualityScore:Math.max(0,100-cost(picked.warnings)),
     warnings:picked.warnings,
     alternatives:assessed.slice(1,3).map(x=>({
-      id:x.id,name:x.name,qualityScore:Math.max(0,Math.min(100,Math.round(x.rating))),
+      id:x.id,name:x.name,qualityScore:Math.max(0,100-cost(x.warnings)),
       warnings:x.warnings
     }))};
   return {scene:picked.scene,selection,content};
