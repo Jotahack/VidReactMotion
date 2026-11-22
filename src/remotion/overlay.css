@@ -12,3 +12,6 @@
 
 /* A word may move to the next line, but its letters never break apart. */
 .vrm-whole-word{display:inline-block;white-space:nowrap;word-break:keep-all;overflow-wrap:normal;hyphens:none}
+
+/* Reusable transparent editorial panel, with readable contrast on footage. */
+.vrm-info-card{background:linear-gradient(135deg,rgba(15,22,36,.90),rgba(25,34,50,.78));border:1.5px solid rgba(255,255,255,.27);box-shadow:0 22px 64px rgba(0,0,0,.38);backdrop-filter:blur(9px);color:#fff}
