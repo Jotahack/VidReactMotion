@@ -8,6 +8,7 @@ import personCenteredTypography from '../examples/person-centered-typography.jso
 import biotiposInfoCard from '../examples/biotipos-info-card.json';
 import {readNdjsonResponse} from './shared/ndjson.js';
 import {coverageGaps} from './shared/motion.js';
+import {assessComposition} from './shared/quality.js';
 import './styles/tailwind.css';
 import './style.css';
 
@@ -41,6 +42,7 @@ function App() {
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
  const warnings=useMemo(()=>analyzeSpec(spec),[spec]);
  const gaps=useMemo(()=>coverageGaps(spec),[spec]);
+ const quality=useMemo(()=>assessComposition(spec,{reserveCenter:placement==='around-person'}),[spec,placement]);
  useEffect(()=>{refreshModels();},[]);
  async function request(url,init) {
    const response=await fetch(url,init);
@@ -231,6 +233,9 @@ function App() {
            </div>
          </div><p className="hint">El vídeo o imagen de referencia solo aparece en la vista previa: la exportación conserva la transparencia.</p>
          <p className="hint">Storyboard: {spec.scenes?.length??1} escenas, {spec.scenes?.reduce((n,s)=>n+s.groups.length,0)??1} grupos sincronizados.</p>
+         <p className="hint">Auditoría de composición: {quality.length?quality.length+' posibles problemas':'sin alertas geométricas detectadas'}.</p>
+         {quality.length>0&&<div className="quality" role="status"><strong>Mejoras de legibilidad recomendadas</strong>
+           {quality.map((issue,i)=><p key={i}>{issue.message}</p>)}</div>}
          {(warnings.length>0||gaps.length>0)&&<div className="quality" role="status">
            <strong>Revisión de calidad</strong>
            {warnings.map((w,i)=><p key={'w'+i}>{w}</p>)}
