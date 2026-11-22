@@ -85,8 +85,8 @@ export function composeFromCatalog({intent,content,format='landscape',duration=7
     // presenter's entire vertical side with an almost-empty container.
     const wordCount=body.trim().split(/\s+/u).filter(Boolean).length;
     const cardHeight=portrait?
-      Math.min(48,Math.max(27,26+Math.max(0,wordCount-14)*0.75)):
-      Math.min(60,Math.max(42,41+Math.max(0,wordCount-15)*1.0));
+      Math.min(48,26+Math.max(0,wordCount-10)*0.55):
+      Math.min(60,39+Math.max(0,wordCount-10)*1.3);
     area.height=Number(cardHeight.toFixed(1));
     area.y=Number(((100-cardHeight)/2).toFixed(1));
     if(!body)throw new Error('Falta el texto explicativo.');
