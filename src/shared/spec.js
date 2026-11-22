@@ -146,7 +146,8 @@ export function normalizeSpec(raw,forced={}) {
   if(!scenes.length)throw new Error('No hay elementos para animar.');
   // Extend the final scene even if malformed groups were discarded.
   const last=scenes.at(-1);last.hold=Number((duration-last.at).toFixed(3));
-  return {format,duration,scenes};
+  return {format,duration,scenes,
+    ...(raw.transitionEngine==='remotion'?{transitionEngine:'remotion'}:{})};
 }
 
 export function analyzeSpec(raw) {
