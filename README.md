@@ -1,23 +1,128 @@
 # VidReactMotion
 
-Aplicación para crear **overlays animados con transparencia** desde prompts, con React y Remotion.
+**Generador de overlays y animaciones con fondo transparente mediante prompts.** Editor React y render local con Remotion. La generación funciona con **LM Studio** o con una **API compatible con OpenAI** mediante clave.
 
-**En desarrollo (MVP).** El render se ejecuta localmente. La generación de escenas puede utilizar **LM Studio** en el ordenador o un servicio de IA con **API key**.
+> **Estado: MVP técnico V2.** Ahora incluye storyboards con escenas consecutivas, grupos animados, keyframes de grupo, tipografía cinética, SVG orbital, pulsos, haces de luz y ticker, editor JSON, vista previa y exportación MOV/WebM con alfa. No se ha validado todavía el render de extremo a extremo en tu Windows/CapCut.
 
-## Propuesta de arquitectura
+## Aplicación de escritorio (plan de evolución)
 
-- **Frontend React + Remotion Player:** editor de escenas, previsualización y exportación.
-- **Backend ligero Node.js:** puente con proveedores IA, custodia de API keys y orquestación del render.
-- **Escenas JSON validadas:** el modelo devuelve datos estructurados; nunca ejecutamos JavaScript generado por IA.
-- **MOV ProRes 4444/WebM con alfa:** superposición sobre el vídeo principal en editores compatibles.
-- **Sin Django, base de datos ni Docker obligatorios** para el MVP. Un solo `npm install` y `npm run dev`.
+Queremos que VidReactMotion se instale en Windows como una app normal **sin login ni base de datos**, desde un icono. La opción elegida para construirla es **Electron + React + Remotion** (no es necesario reescribir React en React Native).
 
-El backend es útil aunque la IA se ejecute localmente: Remotion necesita renderizar, escribir archivos y gestionar recursos; las claves de APIs externas nunca deben ir en el navegador.
+**Estado actual:** la PR #1 contiene el MVP web-local. **Todavía no hay instalador .exe ni `npm run dev:desktop`**. La arquitectura, seguridad, persistencia local y las pruebas necesarias están documentadas en [docs/DESKTOP.md](docs/DESKTOP.md). En la versión de escritorio final, Node/Chromium irán empaquetados; LM Studio/modelo seguirán siendo requisitos del modo IA local.
 
-Documentación de instalación, configuración y arquitectura y código de la primera versión se preparan en una rama de desarrollo antes de integrarlos.
+## Instalación rápida
 
-## Enlaces
+Requisitos: **Node.js 20.11+**, npm y conexión inicial para descargar dependencias. Si usas IA local, instala también LM Studio.
 
-- [LM Studio](https://lmstudio.ai/)
-- [Remotion](https://www.remotion.dev/)
+En PowerShell:
+
+```powershell
+git clone https://github.com/Jotahack/VidReactMotion.git
+cd VidReactMotion
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+Si la rama aún está en revisión, descarga la rama `feat/modular-local-mvp` o cambia a ella con `git switch feat/modular-local-mvp`.
+
+Abre **http://127.0.0.1:5173**. La API escucha en **127.0.0.1:3131**. Puedes previsualizar y renderizar la **escena de prueba sin conectar ninguna IA**.
+
+## IA local — LM Studio
+
+1. Descarga LM Studio desde **https://lmstudio.ai/**.
+2. Descarga y carga un modelo *instruct* que admita salida JSON estructurada.
+3. Activa su servidor local compatible con OpenAI (habitualmente `http://127.0.0.1:1234/v1`).
+4. Deja el archivo `.env` así:
+
+```dotenv
+AI_PROVIDER=lmstudio
+AI_BASE_URL=http://127.0.0.1:1234/v1
+AI_API_KEY=
+AI_MODEL=
+```
+
+5. Ejecuta `npm run dev`, actualiza la lista de modelos, selecciona uno y escribe tu prompt.
+
+Si el servidor usa otro puerto, actualiza `AI_BASE_URL`.
+
+**Generación cinematográfica por planos:** una pieza de 60 segundos requiere briefing, plan de ocho escenas y una inferencia por escena: **10 peticiones secuenciales** al modelo (más reintentos si un plano sale incompleto). Se muestra el progreso en directo y se puede cancelar. Con GPT-OSS 20B en local puede tardar bastante; no se ha medido aún el tiempo real en tu PC.
+
+## IA por API key
+
+Cambia el `.env`:
+
+```dotenv
+AI_PROVIDER=compatible
+AI_BASE_URL=https://api.openai.com/v1
+AI_API_KEY=TU_CLAVE_PRIVADA
+AI_MODEL=ID_DEL_MODELO_COMPATIBLE
+```
+
+También se admiten otros proveedores con endpoints estilo OpenAI, si el modelo admite `response_format: json_schema`. `AI_MODEL` sirve para proveedores que no ofrezcan `GET /models`. **Nunca subas `.env` a Git**, ni pegues la API key en el frontend. Con una API externa el prompt sale a ese proveedor; el vídeo se sigue renderizando localmente.
+
+## Prueba extrema sin modelo
+
+Selecciona **Horizontal 16:9** o **Vertical 9:16** y pulsa **«Cargar prueba extrema · 60 segundos · formato elegido»**. La aplicación prepara un storyboard determinista de **8 escenas, 32 grupos, 65 elementos y 96 keyframes**. Puedes cargar también un archivo JSON desde tu equipo. La prueba extrema se construye sin IA y permite distinguir un problema del motor de uno de GPT-OSS.
+
+En CI se ejecutan pruebas unitarias, compilación de Vite y Remotion, renders PNG con transparencia y una prueba corta de ProRes 4444 alfa. **La compatibilidad final con tu CapCut y el tiempo de render de 60s en Windows deben comprobarse en tu equipo.**
+
+## Mejoras de calidad V2.1
+
+La app dispone ahora de **modos de composición**: automático, solo tipografía, tarjeta informativa, lista y motion graphics avanzado. En los modos sencillos GPT-OSS realiza una inferencia de contenido y el motor controla directamente posiciones, tipografía, tiempos y legibilidad; ya no fuerza cuatro grupos por plano.
+
+- **Montserrat local**, además de Inter y Arial, seleccionable en interfaz y JSON.
+- **infoCard**, contenedor con título, explicación, fondo semitransparente y altura proporcional.
+- Texto de una sola línea, ajuste automático, elementos estáticos y clips de **1 a 60 segundos**.
+- Zonas de composición configurables y vista previa sobre vídeo o imagen de referencia local (sin incluirla en exportación).
+- Avisos de legibilidad, márgenes, solapamientos y huecos de tiempo.
+- Botón de ejemplo **Tarjeta BIOTIPOS con Montserrat**.
+
+La clasificación automática de prompts es heurística, y las comprobaciones no sustituyen una revisión visual del vídeo. Consulta [la guía de calidad V2.1](docs/QUALITY_V2_1.md).
+
+## Flujo de trabajo
+
+1. Escribe un prompt como «Etiqueta roja ÚLTIMA HORA, titular sobre comercio mundial y contador hasta 72, estilo informativo».
+2. Selecciona horizontal **1920 × 1080** o vertical **1080 × 1920**, duración **3–60 s**.
+3. Pulsa **Generar con IA**: el modelo crea primero un briefing creativo y después un storyboard JSON V2 con planos y grupos animados, keyframes generados y distribución automática de elementos (solo para escenas creadas por IA). Puedes consultar el briefing y modificar el JSON.
+4. Pulsa **Renderizar transparente** y descarga **MOV ProRes 4444** o **WebM VP8**. Los archivos quedan también en `outputs/`. La aplicación muestra el progreso y permite cancelar una exportación larga.
+
+El patrón ajedrezado es **solo la guía de transparencia de la vista previa**. Un MP4 H.264 convencional no conserva ese alfa. La importación de MOV alfa depende del editor y versión de CapCut: hay que probarla en el equipo final. Remotion puede descargar un navegador compatible en el primer render.
+
+## Comandos
+
+| Comando | Para qué sirve |
+| --- | --- |
+| `npm run dev` | Arrancar React y API |
+| `npm run studio` | Abrir Remotion Studio |
+| `npm test` | Pruebas unitarias |
+| `npm run check` | Pruebas y sintaxis de API |
+
+## Diseño del código
+
+```text
+server/
+  ai/          proveedor de IA y prompt
+  render/      servicio de exportación alfa
+  routes/      API HTTP y validaciones
+  config.mjs   configuración y secretos
+src/
+  remotion/    componentes de vídeo
+  shared/      contrato JSON compartido y normalización
+  main.jsx     interfaz React
+tests/         pruebas sin depender del proveedor
+docs/          arquitectura y guía de desarrollo
+```
+
+Usamos **un solo backend Node.js ligero**, sin Django, base de datos ni Docker obligatorios. Aplica SOLID/DRY/KISS: rutas y servicios separados, adaptadores de IA intercambiables, contratos compartidos y cero microservicios prematuros.
+
+- [Motor V2: storyboards, grupos y keyframes](docs/TIMELINE_V2.md)
+- [Generación cinematográfica y prueba extrema de 60s](docs/CINEMATIC_GENERATION.md)
+- [Pipeline IA: idea → briefing creativo → storyboard](docs/PROMPT_PIPELINE.md)
+- [Arquitectura y decisiones](docs/ARCHITECTURE.md)
+- [Guía de desarrollo y checklist de validación](docs/DEVELOPMENT.md)
+- [Documentación de LM Studio](https://lmstudio.ai/docs/developer/openai-compat)
+- [Remotion y vídeo transparente](https://www.remotion.dev/docs/transparent-videos)
 - [Licencia de Remotion](https://www.remotion.dev/docs/license/pricing)
+
+**Límites de seguridad:** la API escucha solo en `127.0.0.1`, no se ejecuta código procedente del LLM y las claves se almacenan únicamente en el entorno del servidor. No expongas el servidor públicamente sin autenticación, controles de recursos y auditoría adicional.

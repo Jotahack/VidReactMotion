@@ -1,0 +1,71 @@
+name: Validate VidReactMotion
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - feat/modular-local-mvp
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Unit and syntax checks
+        run: npm run check
+      - name: Compile React and Tailwind preview
+        run: npm run build
+      - name: Compile Remotion and Tailwind for alpha export
+        run: npm run bundle:check
+      - name: Render stress-test PNGs and verify alpha
+        run: npm run render:smoke
+      - name: Keep rendered stress-test frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-test-frames
+          path: /tmp/vrm-stress-smoke/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Export ProRes 4444 video and inspect alpha
+        run: npm run render:alpha:smoke
+      - name: Keep alpha-tested MOV sample
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prores-alpha-smoke
+          path: /tmp/vrm-alpha-smoke.mov
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Verify text columns and central person space
+        run: npm run render:type:smoke
+      - name: Save typography proof frame
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: person-centered-typography
+          path: |
+            /tmp/vrm-person-type-smoke.png
+            /tmp/vrm-legacy-longword-smoke.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Verify Montserrat card against transparent presenter layout
+        run: npm run render:card:smoke
+      - name: Save Montserrat card preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: montserrat-info-card
+          path: /tmp/vrm-biotipos-card.png
+          if-no-files-found: ignore
+          retention-days: 7
