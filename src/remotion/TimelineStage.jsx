@@ -12,9 +12,9 @@ function Group({scene,group}) {
   const time=frame/fps-started;
   if(time<0||time>=group.hold)return null;
   const localFrame=Math.max(0,frame-Math.round(started*fps));
-  const progress=interpolate(time,[0,0.46],[0,1],clamp);
+  const progress=group.motion==='none'?1:interpolate(time,[0,0.46],[0,1],clamp);
   const bounce=spring({fps,frame:localFrame,config:{damping:16,stiffness:145,mass:0.9}});
-  const exit=interpolate(time,[Math.max(0,group.hold-0.35),group.hold],[1,0],clamp);
+  const exit=group.exit==='none'?1:interpolate(time,[Math.max(0,group.hold-0.35),group.hold],[1,0],clamp);
   const manual=keyframesToStyle(group.keyframes,time);
   const style={
     backgroundColor:'transparent',pointerEvents:'none',
@@ -39,7 +39,7 @@ function Shot({scene}) {
   const transition=scene.transition;
   const transform=transition==='slide'?'translateX('+((1-progress)*65).toFixed(2)+'px)':
     transition==='zoom'?'scale('+(1.05-progress*0.05).toFixed(4)+')':'none';
-  const opacity=transition==='cut'?exit:Math.min(progress,exit);
+  const opacity=transition==='cut'?1:Math.min(progress,exit);
   return <AbsoluteFill className={'vrm-scene vrm-preset-'+scene.preset}
       style={{backgroundColor:'transparent',pointerEvents:'none',opacity,transform}}>
     {scene.groups.map((group,index)=><Group key={index} group={group} scene={scene}/>)}
