@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@remotion/bundler": "4.0.539",
+    "@fontsource/montserrat": "^5.2.8",
     "@remotion/player": "4.0.539",
     "@remotion/renderer": "4.0.539",
     "dotenv": "^16.4.7",
