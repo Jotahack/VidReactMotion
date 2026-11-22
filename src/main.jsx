@@ -30,6 +30,14 @@ function App() {
  const [font,setFont]=useState('Montserrat');
  const generationAbort=useRef(null);
  const renderAbort=useRef(null);
+ const [reference,setReference]=useState(null);
+ const referenceUrlRef=useRef(null);
+ useEffect(()=>()=>{if(referenceUrlRef.current)URL.revokeObjectURL(referenceUrlRef.current);},[]);
+ function updateReference(file){
+   if(referenceUrlRef.current)URL.revokeObjectURL(referenceUrlRef.current);
+   referenceUrlRef.current=file?URL.createObjectURL(file):null;
+   setReference(file?{url:referenceUrlRef.current,type:file.type.startsWith('video/')?'video':'image'}:null);
+ }
  const dimensions=useMemo(()=>spec.format==='portrait'?{width:1080,height:1920}:{width:1920,height:1080},[spec.format]);
  const warnings=useMemo(()=>analyzeSpec(spec),[spec]);
  const gaps=useMemo(()=>coverageGaps(spec),[spec]);
@@ -200,14 +208,28 @@ function App() {
      <section className="right">
        <div className="panel previewPanel ring-1 ring-white/5"><div className="previewTitle"><strong>Vista previa</strong>
          <small>{dimensions.width}×{dimensions.height} · {spec.duration}s · 30fps</small></div>
+         <div className="referenceControls">
+           <label htmlFor="referenceFootage">Referencia local: imagen o vídeo de la persona (no se exporta)</label>
+           <input id="referenceFootage" type="file" accept="image/*,video/*"
+             onChange={event=>{
+               updateReference(event.target.files?.[0]||null);
+               event.target.value='';
+             }}/>
+           {reference&&<button className="secondary" onClick={()=>updateReference(null)}>Quitar referencia</button>}
+         </div>
          <div className="stage" style={{maxWidth:spec.format==='portrait'?360:900}}>
-           <div className="checker" style={{aspectRatio:ratio}}>
+           <div className="checker" style={{aspectRatio:ratio,position:'relative'}}>
+             {reference&&(reference.type==='video'?
+               <video src={reference.url} muted autoPlay loop playsInline
+                 style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>:
+               <img src={reference.url} alt="Fotograma de referencia"
+                 style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>)}
              <Player key={JSON.stringify(spec)} component={TimelineStage} inputProps={{spec}}
                durationInFrames={Math.ceil(spec.duration*30)} compositionWidth={dimensions.width}
                compositionHeight={dimensions.height} fps={30} autoPlay loop controls
-               style={{width:'100%',aspectRatio:ratio}}/>
+               style={{width:'100%',aspectRatio:ratio,position:'relative',zIndex:1}}/>
            </div>
-         </div><p className="hint">El tablero indica transparencia y no se exporta.</p>
+         </div><p className="hint">El vídeo o imagen de referencia solo aparece en la vista previa: la exportación conserva la transparencia.</p>
          <p className="hint">Storyboard: {spec.scenes?.length??1} escenas, {spec.scenes?.reduce((n,s)=>n+s.groups.length,0)??1} grupos sincronizados.</p>
          {(warnings.length>0||gaps.length>0)&&<div className="quality" role="status">
            <strong>Revisión de calidad</strong>
