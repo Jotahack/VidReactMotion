@@ -31,13 +31,32 @@ function longestWordEm(words,fontFamily,fontWeight) {
   return estimate;
 }
 export function fitTextSize({text,size,width,canvasWidth,
-  fontFamily='Inter,Arial,sans-serif',fontWeight=900}) {
+  fontFamily='Inter,Arial,sans-serif',fontWeight=900,singleLine=false,paddingPx=0}) {
   const requested=Number.isFinite(Number(size))?Math.max(1,Number(size)):52;
   const words=String(text??'').trim().split(/\s+/u).filter(Boolean);
   if(!words.length)return requested;
-  const longest=longestWordEm(words,fontFamily,fontWeight);
+  const longest=longestWordEm(singleLine?[words.join(' ')]:words,fontFamily,fontWeight);
   // 8% reserved for text shadow, letter spacing and Chromium font metrics.
-  const availablePx=Math.max(24,canvasWidth*Math.max(0,Number(width)||0)/100*0.92);
+  const availablePx=Math.max(24,(canvasWidth*Math.max(0,Number(width)||0)/100-paddingPx)*0.90);
   const maxSize=availablePx/Math.max(0.1,longest);
   return Math.round(Math.min(requested,maxSize)*10)/10;
+}
+
+
+// Estimate multiline paragraph height without guessing from the longest word.
+// This is a conservative layout guard; actual final layout is handled by CSS.
+export function fitParagraphSize({text,widthPx,heightPx,requested=40,min=22}){
+  const words=String(text??'').trim().split(/\s+/u).filter(Boolean);
+  if(!words.length)return requested;
+  for(let fontSize=requested;fontSize>=min;fontSize-=1){
+    const capacity=Math.max(1,widthPx/(fontSize*0.60));
+    let lines=1,used=0;
+    for(const word of words){
+      const length=estimateWordEm(word)/0.60+1;
+      if(used+length>capacity&&used>0){lines++;used=0;}
+      used+=length;
+    }
+    if(lines*fontSize*1.42<=heightPx)return fontSize;
+  }
+  return min;
 }
